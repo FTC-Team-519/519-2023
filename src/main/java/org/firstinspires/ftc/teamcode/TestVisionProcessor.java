@@ -21,7 +21,11 @@ public class TestVisionProcessor implements VisionProcessor {
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
-
+        double[] indexList = frame.get(0, 0);
+        telemetry.addData("What the thing is", indexList[0] + " " + indexList[1] + " " + indexList[2]);
+        telemetry.addData("Width: ", frame.width());
+        telemetry.addData("Height", frame.height());
+//        telemetry.update();
         return null;
     }
 
