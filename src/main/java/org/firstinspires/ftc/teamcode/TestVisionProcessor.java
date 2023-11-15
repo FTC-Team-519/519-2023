@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.vision.VisionProcessor;
@@ -31,6 +33,11 @@ public class TestVisionProcessor implements VisionProcessor {
 
     @Override
     public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
-
+        Paint test = new Paint();
+        test.setColor(Color.RED);
+        canvas.drawLine(100, 100, 100, 200, test);
+        canvas.drawLine(100, 200, 200, 200, test);
+        canvas.drawLine(200, 200, 200, 100, test);
+        canvas.drawLine(200, 100, 100, 100, test); // a
     }
 }
