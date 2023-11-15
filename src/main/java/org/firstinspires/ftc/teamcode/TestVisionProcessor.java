@@ -38,6 +38,6 @@ public class TestVisionProcessor implements VisionProcessor {
         canvas.drawLine(100, 100, 100, 200, test);
         canvas.drawLine(100, 200, 200, 200, test);
         canvas.drawLine(200, 200, 200, 100, test);
-        canvas.drawLine(200, 100, 100, 100, test); // a
+        canvas.drawLine(200, 100, 100, 100, test); // These lines draw the square need to then have square move based on what it sees
     }
 }
