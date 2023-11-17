@@ -38,9 +38,7 @@ public class BaseOpmode extends OpMode {
     }
     //Repeatedly, once PLAY is pressed
     @Override
-    public void loop() {
-        telemetry.addData("Status", "Run Time: %s", runtime.toString());
-    }
+    public void loop() {telemetry.addData("Status", "Run Time: %s", runtime.toString());}
 
     //Once when STOP is pressed
     @Override

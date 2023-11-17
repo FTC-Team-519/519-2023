@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name="TeleopOpmode",group="Iterative OpMode")
+@TeleOp(name="Mecanim Teleop",group="Iterative OpMode")
 public class TeleOpmode extends BaseOpmode {
 
     @Override
