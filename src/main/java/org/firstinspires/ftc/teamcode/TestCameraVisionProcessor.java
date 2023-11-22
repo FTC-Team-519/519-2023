@@ -13,7 +13,7 @@ public class TestCameraVisionProcessor extends OpMode {
     private Gamepad gamepad1;
     @Override
     public void init() {
-        visionProcessor = new TestVisionProcessor(telemetry);
+        visionProcessor = new TestVisionProcessor(telemetry, true);
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), visionProcessor);
         portal.resumeStreaming();
     }
