@@ -178,24 +178,33 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         imu.resetYaw();
 
+
+        boolean spikeLeft = false;
+        boolean spikeCenter = true;
+        boolean spikeRight = false;
+
         // Step through each leg of the path,
         // Notes:   Reverse movement is obtained by setting a negative distance (not speed)
         //          holdHeading() is used after turns to let the heading stabilize
         //          Add a sleep(2000) after any step to keep the telemetry data visible for review
+        if (spikeLeft){
+            turnToHeading(TURN_SPEED, 45);
+            driveStraight(DRIVE_SPEED, 24, 45);
+        } else if (spikeCenter){
+            driveStraight(DRIVE_SPEED, 36, 0);
+        } else if (spikeRight){
+            turnToHeading(TURN_SPEED, -45);
+            driveStraight(DRIVE_SPEED, 24, -45);
+        }
 
-        driveStraight(DRIVE_SPEED, 24.0, 0.0);    // Drive Forward 24"
-//        turnToHeading( TURN_SPEED, 45.0);               // Turn  CW to -45 Degrees
-//        holdHeading( TURN_SPEED, 45.0, 1.5);   // Hold -45 Deg heading for a 1/2 second
-//
-//        driveStraight(DRIVE_SPEED, 144.0, 45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
-//        turnToHeading( TURN_SPEED,  0.0);               // Turn  CCW  to  45 Degrees
-//        holdHeading( TURN_SPEED,  0.0, 1.5);    // Hold  45 Deg heading for a 1/2 second
-//
-//        driveStraight(DRIVE_SPEED, 144.0, 0.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
-//        turnToHeading( TURN_SPEED,   180.0);               // Turn  CW  to 0 Degrees
-//        holdHeading( TURN_SPEED,   180.0, 1.5);    // Hold  0 Deg heading for 1 second
-//
-//        driveStraight(DRIVE_SPEED,144.0, 180.0);    // Drive in Reverse 48" (should return to approx. staring position)
+//        turnToHeading(TURN_SPEED, 45);
+//        holdHeading(TURN_SPEED, 45, 1.5);
+//        turnToHeading(TURN_SPEED, 0);
+//        holdHeading(TURN_SPEED, 0, 1.5);
+
+//        turnToHeading( TURN_SPEED, 45.0);         // Turn robot
+//        holdHeading( TURN_SPEED, 45.0, 1.5);      // Hold heading
+//        driveStraight(DRIVE_SPEED, 144.0, 45.0);  // Drive forward
 
         telemetry.addData("Path", "Complete");
         telemetry.update();

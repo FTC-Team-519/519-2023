@@ -57,15 +57,10 @@ public class Outreach extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
-<<<<<<< HEAD
 
     private boolean tankDrive = false;
     private boolean toggleYJustPressed = false;
-
-=======
-    private boolean tankDrive = false;
     private boolean yPreviouslyPressed = false;
->>>>>>> origin/Drew
     /*
      * Code to run ONCE when the driver hits INIT
      */
