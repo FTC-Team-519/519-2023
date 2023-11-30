@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.vision.VisionProcessor;
@@ -96,15 +94,15 @@ public class TestVisionProcessor implements VisionProcessor {
 //        telemetry.addData("Canvas Width: ", canvas.getWidth());
     }
 
-    public boolean getLeft() {
+    public boolean isLeft() {
         return left;
     }
 
-    public boolean getCenter() {
+    public boolean isCenter() {
         return center;
     }
 
-    public boolean getRight() {
+    public boolean isRight() {
         return right;
     }
 }
