@@ -9,9 +9,15 @@ public class TeleOpmode extends BaseOpmode {
     public void loop() {
 
         double max;
-        double forwards = Math.pow(-gamepad1.left_stick_y, 3);
+        double forwards = -gamepad1.left_stick_y;
+        double sideways = gamepad1.left_stick_x;
+        double turn = gamepad1.right_stick_x;
+
+        //The commented out lines are an alternative instead of linear controls
+        /*double forwards = Math.pow(-gamepad1.left_stick_y, 3);
         double sideways = Math.pow(gamepad1.left_stick_x, 3);
-        double turn = Math.pow(gamepad1.right_stick_x, 3);
+        double turn = Math.pow(gamepad1.right_stick_x, 3);*/
+
         double frontLeftPower = forwards + sideways + turn;
         double frontRightPower = forwards - sideways - turn;
         double backLeftPower = forwards - sideways + turn;
