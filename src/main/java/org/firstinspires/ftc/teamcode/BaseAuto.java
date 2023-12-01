@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -12,6 +13,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 public class BaseAuto extends OpMode {
     protected boolean USE_WEBCAM = true;
+    public static final double MAX_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.97;
+    public static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
+    public static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.35;
+    public static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.38;
     protected TestVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
     protected DcMotor leftFrontDrive = null;
@@ -24,6 +29,7 @@ public class BaseAuto extends OpMode {
     protected boolean goingCenter;
     protected boolean goingLeft;
     protected boolean goingRight;
+    protected Servo autoPixelServo = null;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1425.1  ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
@@ -59,25 +65,26 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void init() {
-        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        autoPixelServo = hardwareMap.get(Servo.class, "pixelDropper");
+//        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
+//        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
+//        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
+//        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
 
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+//        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+//        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+//        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+//
+//        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//
+//        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imu");
 //        imu.initialize();
@@ -85,7 +92,7 @@ public class BaseAuto extends OpMode {
         teamScoringElementFinder = new TestVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
         initAprilTag();
 
-        portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
+//        portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
     }
 
     @Override
@@ -108,15 +115,16 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void loop() {
-        if (goingCenter) {
-            driveStraight(driveSpeed, 18, 0.0);
-        } else if (goingLeft) {
-            driveStraight(driveSpeed, 18, 0.0);
-            turnToHeading(turnSpeed, -90);
-        }else if (goingRight) {
-            driveStraight(driveSpeed, 18, 0.0);
-            turnToHeading(turnSpeed, 90);
-        }
+//        if (goingCenter) {
+//            driveStraight(driveSpeed, 18, 0.0);
+//        } else if (goingLeft) {
+//            driveStraight(driveSpeed, 18, 0.0);
+//            turnToHeading(turnSpeed, -90);
+//        }else if (goingRight) {
+//            driveStraight(driveSpeed, 18, 0.0);
+//            turnToHeading(turnSpeed, 90);
+//        }
+        autoPixelServo.setPosition(0.0);
     }
 
     @Override
