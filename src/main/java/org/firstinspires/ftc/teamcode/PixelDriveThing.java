@@ -224,15 +224,6 @@ public class PixelDriveThing extends LinearOpMode {
             telemetry.addData("Side", "NOPE");
         }
 
-//        turnToHeading(TURN_SPEED, 45);
-//        holdHeading(TURN_SPEED, 45, 1.5);
-//        turnToHeading(TURN_SPEED, 0);
-//        holdHeading(TURN_SPEED, 0, 1.5);
-
-//        turnToHeading( TURN_SPEED, 45.0);         // Turn robot
-//        holdHeading( TURN_SPEED, 45.0, 1.5);      // Hold heading
-//        driveStraight(DRIVE_SPEED, 144.0, 45.0);  // Drive forward
-
         telemetry.addData("Path", "Complete");
         telemetry.update();
         portal.close();
