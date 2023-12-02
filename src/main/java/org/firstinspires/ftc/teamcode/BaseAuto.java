@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,28 +8,39 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 @Autonomous(name="TestWithTSE Detection", group="Iterative OpMode")
 
 public class BaseAuto extends OpMode {
     protected boolean USE_WEBCAM = true;
+
     public static final double MAX_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.97;
     public static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
     public static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.35;
     public static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.38;
+
     protected TestVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
+
     protected DcMotor leftFrontDrive = null;
     protected DcMotor leftBackDrive = null;
     protected DcMotor rightFrontDrive = null;
     protected DcMotor rightBackDrive = null;
 
     protected AprilTagProcessor aprilTagProcessor;
-    protected IMU imu = null;
+
+    protected BNO055IMU imu = null;
+    protected Orientation angles;
+
     protected boolean goingCenter;
     protected boolean goingLeft;
     protected boolean goingRight;
+
     protected Servo autoPixelServo = null;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1425.1  ;    // eg: TETRIX Motor Encoder
@@ -65,34 +77,37 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void init() {
-        autoPixelServo = hardwareMap.get(Servo.class, "pixelDropper");
-//        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-//        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-//        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
-//        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+//        autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
 
-//        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-//        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-//        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-//        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-//
-//        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//
-//        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
 
-        imu = hardwareMap.get(IMU.class, "imu");
-//        imu.initialize();
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imu.initialize(parameters);
 
         teamScoringElementFinder = new TestVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
         initAprilTag();
 
-//        portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
+        portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
     }
 
     @Override
@@ -115,6 +130,7 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void loop() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 //        if (goingCenter) {
 //            driveStraight(driveSpeed, 18, 0.0);
 //        } else if (goingLeft) {
@@ -124,7 +140,12 @@ public class BaseAuto extends OpMode {
 //            driveStraight(driveSpeed, 18, 0.0);
 //            turnToHeading(turnSpeed, 90);
 //        }
-        autoPixelServo.setPosition(0.0);
+
+//        autoPixelServo.setPosition(0.0);
+
+        telemetry.addData("Heading", angles.firstAngle);
+        telemetry.addData("Pitch", angles.secondAngle);
+        telemetry.addData("Roll", angles.thirdAngle);
     }
 
     @Override
@@ -132,100 +153,38 @@ public class BaseAuto extends OpMode {
 
     }
 
-    public void turnToHeading(double maxTurnSpeed, double heading) {
+    public void driveDistanceInches(double speed, double distanceInches) {
+        int moveCounts = (int)(distanceInches * COUNTS_PER_INCH);
+        leftFrontTarget = leftFrontDrive.getCurrentPosition() + moveCounts;
+        rightFrontTarget = rightFrontDrive.getCurrentPosition() + moveCounts;
+        leftBackTarget = leftBackDrive.getCurrentPosition() + moveCounts;
+        rightBackTarget = rightBackDrive.getCurrentPosition() + moveCounts;
 
-        // Run getSteeringCorrection() once to pre-calculate the current error
-        getSteeringCorrection(heading, P_DRIVE_GAIN);
+        leftFrontDrive.setTargetPosition(leftFrontTarget);
+        leftBackDrive.setTargetPosition(leftBackTarget);
+        rightBackDrive.setTargetPosition(rightBackTarget);
+        rightFrontDrive.setTargetPosition(rightFrontTarget);
 
-        // keep looping while we are still active, and not on heading.
-        while ((Math.abs(headingError) > HEADING_THRESHOLD)) {
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            // Determine required steering to keep on heading
-            turnSpeed = getSteeringCorrection(heading, P_TURN_GAIN);
-
-            // Clip the speed to the maximum permitted value.
-            turnSpeed = Range.clip(turnSpeed, -maxTurnSpeed, maxTurnSpeed);
-
-            // Pivot in place by applying the turning correction
-            moveRobot(0, turnSpeed);
-        }
-
-        // Stop all motion;
-        moveRobot(0, 0);
+        setPower(0.5);
     }
 
-    public void driveStraight(double maxDriveSpeed, double distance, double heading) {
-            // Determine new target position, and pass to motor controller
-            int moveCounts = (int)(distance * COUNTS_PER_INCH);
-            leftFrontTarget = leftFrontDrive.getCurrentPosition() + moveCounts;
-            leftBackTarget = leftBackDrive.getCurrentPosition() + moveCounts;
-            rightFrontTarget = rightFrontDrive.getCurrentPosition() + moveCounts;
-
-
-            // Set Target FIRST, then turn on RUN_TO_POSITION
-            leftFrontDrive.setTargetPosition(leftFrontTarget);
-            rightFrontDrive.setTargetPosition(rightFrontTarget);
-
-
-            leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // Set the required driving speed  (must be positive for RUN_TO_POSITION)
-            // Start driving straight, and then enter the control loop
-            maxDriveSpeed = Math.abs(maxDriveSpeed);
-            moveRobot(maxDriveSpeed, 0);
-
-            // keep looping while we are still active, and BOTH motors are running.
-                           // Determine required steering to keep on heading
-                turnSpeed = getSteeringCorrection(heading, P_DRIVE_GAIN);
-
-                // if driving in reverse, the motor correction also needs to be reversed
-                if (distance < 0)
-                    turnSpeed *= -1.0;
-
-                // Apply the turning correction to the current driving speed.
-                moveRobot(driveSpeed, turnSpeed);
-
-                // Display drive status for the driver.
-
-            // Stop all motion & Turn off RUN_TO_POSITION
-            moveRobot(0, 0);
-            leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-    public void moveRobot(double drive, double turn) {
-        driveSpeed = drive;     // save this value as a class member so it can be used by telemetry.
-        turnSpeed  = turn;      // save this value as a class member so it can be used by telemetry.
-
-        leftSpeed  = drive - turn;
-        rightSpeed = drive + turn;
-
-        // Scale speeds down if either one exceeds +/- 1.0;
-        double max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
-        if (max > 1.0)
-        {
-            leftSpeed /= max;
-            rightSpeed /= max;
-        }
-
-        leftFrontDrive.setPower(leftSpeed);
-        rightFrontDrive.setPower(rightSpeed);
+    private void setPower(double power) {
+        leftFrontDrive.setPower(power);
+        leftBackDrive.setPower(power);
+        rightFrontDrive.setPower(power);
+        rightBackDrive.setPower(power);
     }
 
-    public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
-        targetHeading = desiredHeading;  // Save for telemetry
-
-        // Determine the heading current error
-        headingError = targetHeading; //getHeading();
-
-        // Normalize the error to be within +/- 180 degrees
-        while (headingError > 180)  headingError -= 360;
-        while (headingError <= -180) headingError += 360;
-
-        // Multiply the error by the gain to determine the required steering correction/  Limit the result to +/- 1.0
-        return Range.clip(headingError * proportionalGain, -1, 1);
+    private void setMode(DcMotor.RunMode mode) {
+        leftFrontDrive.setMode(mode);
+        leftBackDrive.setMode(mode);
+        rightFrontDrive.setMode(mode);
+        rightBackDrive.setMode(mode);
     }
+
+
 
     private void initAprilTag() {
 
