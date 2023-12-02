@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 @Autonomous(name="TestWithTSE Detection", group="Iterative OpMode")
-
+//@Disabled
 public class BaseAuto extends OpMode {
     protected boolean USE_WEBCAM = true;
 
@@ -23,6 +23,8 @@ public class BaseAuto extends OpMode {
     public static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
     public static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.35;
     public static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.38;
+    public static final double MIN_VALUE_FOR_ARM_SERVO = 0.27;
+    public static final double MAX_VALUE_FOR_ARM_SERVO = 0.85;
 
     protected TestVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
@@ -41,7 +43,12 @@ public class BaseAuto extends OpMode {
     protected boolean goingLeft;
     protected boolean goingRight;
 
+    protected int positionOfTheTSE = 2; // 1 for left 2 for center 3 for right
+    protected int step = 1;
+
     protected Servo autoPixelServo = null;
+
+    protected ElapsedTime runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1425.1  ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
@@ -77,7 +84,7 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void init() {
-//        autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
+        autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
 
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
@@ -126,50 +133,97 @@ public class BaseAuto extends OpMode {
     }
 
     @Override
-    public void loop() {
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//        if (goingCenter) {
-//            driveStraight(driveSpeed, 18, 0.0);
-//        } else if (goingLeft) {
-//            driveStraight(driveSpeed, 18, 0.0);
-//            turnToHeading(turnSpeed, -90);
-//        }else if (goingRight) {
-//            driveStraight(driveSpeed, 18, 0.0);
-//            turnToHeading(turnSpeed, 90);
-//        }
-
-//        autoPixelServo.setPosition(0.0);
-
-        telemetry.addData("Heading", angles.firstAngle);
-        telemetry.addData("Pitch", angles.secondAngle);
-        telemetry.addData("Roll", angles.thirdAngle);
+    public void start() {
+        if (goingLeft) {
+            positionOfTheTSE = 1;
+        }else if (goingCenter) {
+            positionOfTheTSE = 2;
+        }else if (goingRight) {
+            positionOfTheTSE = 3;
+        }
+        runtime.reset();
     }
 
     @Override
-    public void stop() {
+    public void loop() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        switch (positionOfTheTSE) {
+            case 1: // Going to the left
+                switch (step) {
+                    case 1:
+                        driveDistanceInches(driveSpeed, 16);
+                        if (runtime.seconds() > 3) {
+                            step++;
+                        }
+                        break;
+                    case 2:
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        runtime.reset();
+                        step++;
+                        break;
+                    case 3:
+                        turnLeft(0.25, 90);
+                        break;
+                }
+        }
+//        if (goingCenter) {
+//            driveDistanceInches(driveSpeed, 18);
+//        } else if (goingLeft) {
+//            driveDistanceInches(driveSpeed, 12);
+//            turnLeft(0.25, 90);
+//        }else if (goingRight) {
+//            driveDistanceInches(driveSpeed, 18);
+//        }
 
+//        autoPixelServo.setPosition(0.0);
+        telemetry.addData("Step:", step);
+        telemetry.addData("Heading", angles.firstAngle);
+        telemetry.addData("Pitch", angles.secondAngle);
+        telemetry.addData("Roll", angles.thirdAngle);
+        telemetry.update();
+    }
+
+    @Override
+    public void stop() {}
+
+    public void turnLeft(double speed, double degree) {
+        if (angles.firstAngle < degree) {
+            setLeftDrivesPower(-speed);
+            setRightDrivesPower(speed);
+        }else {
+            setAllDrivePower(0.0);
+        }
     }
 
     public void driveDistanceInches(double speed, double distanceInches) {
         int moveCounts = (int)(distanceInches * COUNTS_PER_INCH);
-        leftFrontTarget = leftFrontDrive.getCurrentPosition() + moveCounts;
-        rightFrontTarget = rightFrontDrive.getCurrentPosition() + moveCounts;
-        leftBackTarget = leftBackDrive.getCurrentPosition() + moveCounts;
-        rightBackTarget = rightBackDrive.getCurrentPosition() + moveCounts;
+        telemetry.addData("Target Position", leftFrontDrive.getCurrentPosition() + moveCounts);
+        telemetry.addData("Current Position", leftFrontDrive.getCurrentPosition());
 
-        leftFrontDrive.setTargetPosition(leftFrontTarget);
-        leftBackDrive.setTargetPosition(leftBackTarget);
-        rightBackDrive.setTargetPosition(rightBackTarget);
-        rightFrontDrive.setTargetPosition(rightFrontTarget);
+        leftFrontDrive.setTargetPosition(moveCounts);
+        leftBackDrive.setTargetPosition(moveCounts);
+        rightBackDrive.setTargetPosition(moveCounts);
+        rightFrontDrive.setTargetPosition(moveCounts);
 
         setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        setPower(0.5);
+        setAllDrivePower(0.5);
+
+
     }
 
-    private void setPower(double power) {
+    private void setAllDrivePower(double power) {
+        setLeftDrivesPower(power);
+        setRightDrivesPower(power);
+    }
+
+    private void setLeftDrivesPower(double power) {
         leftFrontDrive.setPower(power);
         leftBackDrive.setPower(power);
+    }
+
+    private void setRightDrivesPower(double power) {
         rightFrontDrive.setPower(power);
         rightBackDrive.setPower(power);
     }
