@@ -327,6 +327,7 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
                             setAllDrivePower(0.0);
                             step++;
                         }
+
                         break;
                     case 6:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
