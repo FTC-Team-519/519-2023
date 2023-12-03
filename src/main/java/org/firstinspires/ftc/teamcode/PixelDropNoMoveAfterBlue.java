@@ -171,14 +171,12 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
             case 1: // Going to the left
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 15);
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         if (runtime.seconds() > 3) {
                             step++;
                         }
                         break;
                     case 2:
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
@@ -257,49 +255,45 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
             case 2: // Going to Center
                 switch (step){
                     case 1:
-                        driveDistanceInches(driveSpeed, 16);
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         if (runtime.seconds() > 3) {
                             step++;
                         }
                         break;
                     case 2:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey() && runtime.seconds() > .5) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-                    case 4:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 5:
-                        driveDistanceInches(0.5, -18);
-                        if (runtime.seconds() > 3.0) {
-                            step++;
-                        }
-                        break;
-                    case 6:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 7:
-                        driveDistanceInches(0.25, 3);
-                        if (runtime.seconds() > 1.0) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-
+//                    case 3:
+//                        setAllDrivePower(-0.25);
+//                        if (seeingGrey() && runtime.seconds() > .5) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
+//                    case 4:
+//                        runtime.reset();
+//                        step++;
+//                        break;
+//                    case 5:
+//                        driveDistanceInches(0.5, -18);
+//                        if (runtime.seconds() > 3.0) {
+//                            step++;
+//                        }
+//                        break;
+//                    case 6:
+//                        runtime.reset();
+//                        step++;
+//                        break;
+//                    case 7:
+//                        driveDistanceInches(0.25, 3);
+//                        if (runtime.seconds() > 1.0) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
+//
                 }
                 break;
 
@@ -309,7 +303,7 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
             case 3:
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 15);
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         if (runtime.seconds() > 3) {
                             step++;
                         }
@@ -410,6 +404,15 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
 
     @Override
     public void stop() {}
+
+    public void driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
+        if (timeElapsed.milliseconds() >= desiredTime) {
+            step++;
+            setAllDrivePower(0.0);
+        }else {
+            setAllDrivePower(speed);
+        }
+    }
 
     public void turnRight(double speed, double degree) {
         double targetDegree = angleOffset - degree;

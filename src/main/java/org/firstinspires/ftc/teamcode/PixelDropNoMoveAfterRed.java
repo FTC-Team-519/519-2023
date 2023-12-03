@@ -62,7 +62,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
     // These variable are declared here (as class members) so they can be updated in various methods,
     // but still be displayed by sendTelemetry()
     private double  targetHeading = 0;
-    private double  driveSpeed    = 0;
+    private double  driveSpeed    = 0.25;
     private double  turnSpeed     = 0;
     private double  leftSpeed     = 0;
     private double  rightSpeed    = 0;
@@ -170,14 +170,9 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 1: // Going to the left
                 switch (step) {
                     case 1:
-//                        driveDistanceTime(driveSpeed, 15);
-                        if (runtime.seconds() > 3) {
-                            step++;
-                        }
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         break;
                     case 2:
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
@@ -256,15 +251,13 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 2: // Going to Center
                 switch (step){
                     case 1:
-                        driveDistanceInches(driveSpeed, 16);
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         if (runtime.seconds() > 3) {
                             step++;
                         }
                         break;
                     case 2:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
@@ -308,14 +301,9 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 3:
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 15);
-                        if (runtime.seconds() > 3) {
-                            step++;
-                        }
+                        driveDistanceTime(driveSpeed, 1500, runtime);
                         break;
                     case 2:
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
@@ -452,8 +440,12 @@ public class PixelDropNoMoveAfterRed extends OpMode {
     }
 
     public void driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
-
-        setAllDrivePower(timeElapsed.milliseconds() >= desiredTime ? 0 : speed);
+        if (timeElapsed.milliseconds() >= desiredTime) {
+            step++;
+            setAllDrivePower(0.0);
+        }else {
+            setAllDrivePower(speed);
+        }
     }
 
     private void setAllDrivePower(double power) {
