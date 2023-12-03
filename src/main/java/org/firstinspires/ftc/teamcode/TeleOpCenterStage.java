@@ -28,6 +28,8 @@ public class TeleOpCenterStage extends OpMode {
 
     public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
+
+    double position = 0;
     //Once, when INIT is pressed
     @Override
     public void init() {
@@ -107,9 +109,9 @@ public class TeleOpCenterStage extends OpMode {
 
     private void hand() {
         if (gamepad2.left_bumper) {
-            clawDroneSideServo.setPower(-1.0);
-        } else if (gamepad2.left_trigger >= 0.25) {
             clawDroneSideServo.setPower(1.0);
+        } else if (gamepad2.left_trigger >= 0.25) {
+            clawDroneSideServo.setPower(-1.0);
         } else {
             clawDroneSideServo.setPower(0.0);
         }
@@ -117,23 +119,28 @@ public class TeleOpCenterStage extends OpMode {
         if (gamepad2.right_bumper) {
             clawControlHubSideServo.setPower(1.0);
         } else if (gamepad2.right_trigger >= 0.25) {
-            clawControlHubSideServo.setPower(0.0);
+            clawControlHubSideServo.setPower(-1.0);
         } else {
             clawControlHubSideServo.setPower(0.0);
         }
 
-        double position = gamepad2.right_stick_y;
+        position = gamepad2.right_stick_y;
         if (position > MAX_VALUE_FOR_WRIST_SERVO) {
             position = MAX_VALUE_FOR_WRIST_SERVO;
         }else if (position < MIN_VALUE_FOR_WRIST_SERVO){
             position = MIN_VALUE_FOR_WRIST_SERVO;
         }
-        moveWrist(position);
+
+        if (position != 0) {
+            moveWrist(position);
+        }
     }
 
     private void launch() {
-        if ((gamepad1.left_bumper && gamepad1.left_trigger >= 0.25) && (gamepad1.right_bumper && gamepad1.right_trigger >= 0.25)) {
+        if (gamepad1.a && gamepad1.b) {
             droneMotor.setPower(1.0);
+        } else {
+            droneMotor.setPower(0.0);
         }
     }
 
