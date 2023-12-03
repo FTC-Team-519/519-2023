@@ -93,10 +93,10 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
 
         pixelDropperColorSensor = hardwareMap.get(ColorSensor.class, "pixelColorSensor");
 
-        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "backRightMotor");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRightMotor");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);

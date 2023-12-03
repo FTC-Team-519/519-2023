@@ -23,8 +23,8 @@ public class PixelDropNoMoveAfterRed extends OpMode {
     public static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
     public static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.34;
     public static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.40;
-    public static final double MIN_VALUE_FOR_ARM_SERVO = 0.27;
-    public static final double MAX_VALUE_FOR_ARM_SERVO = 0.85;
+    public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
+    public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
     protected TestVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
@@ -92,10 +92,10 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 
         pixelDropperColorSensor = hardwareMap.get(ColorSensor.class, "pixelColorSensor");
 
-        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "backRightMotor");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRightMotor");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
