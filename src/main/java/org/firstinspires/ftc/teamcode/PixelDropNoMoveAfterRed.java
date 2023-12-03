@@ -115,6 +115,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         imu = hardwareMap.get(BNO055IMU.class, "imuExpan");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -131,6 +132,8 @@ public class PixelDropNoMoveAfterRed extends OpMode {
         angleOffset = 0;
 
         moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
+
+        step = 1;
     }
 
     @Override
@@ -170,7 +173,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 1: // Going to the left
                 switch (step) {
                     case 1:
-                        driveDistanceTime(driveSpeed, 1500, runtime);
+                        driveDistanceTime(driveSpeed, 5000, runtime);
                         break;
                     case 2:
                         runtime.reset();
@@ -251,8 +254,9 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 2: // Going to Center
                 switch (step){
                     case 1:
-                        driveDistanceTime(driveSpeed, 1500, runtime);
-                        if (runtime.seconds() > 3) {
+                        setAllDrivePower(0.50);
+                        if (seeingRed()) {
+                            setAllDrivePower(0.0);
                             step++;
                         }
                         break;
@@ -301,7 +305,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 3:
                 switch (step) {
                     case 1:
-                        driveDistanceTime(driveSpeed, 1500, runtime);
+                        driveDistanceTime(driveSpeed, 5000, runtime);
                         break;
                     case 2:
                         runtime.reset();
@@ -439,7 +443,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 
     }
 
-    public void driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
+    public void  driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
         if (timeElapsed.milliseconds() >= desiredTime) {
             step++;
             setAllDrivePower(0.0);

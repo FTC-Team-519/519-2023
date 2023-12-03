@@ -26,6 +26,8 @@ public class TeleOpCenterStage extends OpMode {
     public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
     double position;
+
+    final double ARM_SPEED_MULTIPLIER = 0.33;
     //Once, when INIT is pressed
     @Override
     public void init() {
@@ -84,11 +86,11 @@ public class TeleOpCenterStage extends OpMode {
             turn = 0;
         } else if (gamepad1.dpad_left) {
             forwards = 0;
-            sideways = 1;
+            sideways = -1;
             turn = 0;
         } else if (gamepad1.dpad_right) {
             forwards = 0;
-            sideways = -1;
+            sideways = 1;
             turn = 0;
         }
 
@@ -98,9 +100,9 @@ public class TeleOpCenterStage extends OpMode {
 //        if (turn+StickDeadZone==0 || turn-StickDeadZone==0) {turn = 0;}
 
 //      Shaping inputs
-//        forwards = Math.pow(forwards, 3);
-//        sideways = Math.pow(sideways, 3);
-//        turn = Math.pow(turn, 3);
+        forwards = Math.pow(forwards, 3);
+        sideways = Math.pow(sideways, 3);
+        turn = Math.pow(turn, 3);
 
         double frontLeftPower = forwards + sideways + turn;
         double frontRightPower = forwards - sideways - turn;
@@ -171,7 +173,7 @@ public class TeleOpCenterStage extends OpMode {
 
     private void launch() {
         if (gamepad1.a && gamepad1.b) {
-            droneMotor.setPower(1.0);
+            droneMotor.setPower(-1);
         } else {
             droneMotor.setPower(0.0);
         }
@@ -179,8 +181,12 @@ public class TeleOpCenterStage extends OpMode {
 
     private void arm() {
         double power = -gamepad2.left_stick_y;
-        armMotor.setPower(power);
 
+        if (gamepad1.x) {
+            armMotor.setPower(power);
+        } else {
+            armMotor.setPower(power * ARM_SPEED_MULTIPLIER);
+        }
 
         telemetry.addData("armpos",
                 armMotor.getCurrentPosition() + " " + power);

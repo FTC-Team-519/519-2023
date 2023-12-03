@@ -63,7 +63,7 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
     // These variable are declared here (as class members) so they can be updated in various methods,
     // but still be displayed by sendTelemetry()
     private double  targetHeading = 0;
-    private double  driveSpeed    = 0;
+    private double  driveSpeed    = 0.25;
     private double  turnSpeed     = 0;
     private double  leftSpeed     = 0;
     private double  rightSpeed    = 0;
@@ -129,6 +129,7 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
 
         angleOffset = 0;
 
+        step = 0;
 
         moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
     }
@@ -304,13 +305,9 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
                 switch (step) {
                     case 1:
                         driveDistanceTime(driveSpeed, 1500, runtime);
-                        if (runtime.seconds() > 3) {
-                            step++;
-                        }
+
                         break;
                     case 2:
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
@@ -512,7 +509,8 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
         leftBackDrive.setTargetPosition(distanceInches);
         rightFrontDrive.setTargetPosition(distanceInches);
         rightBackDrive.setTargetPosition(-distanceInches);
-        setAllDrivePower(power);
+        setAllDrivePower(power
+        );
         setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
