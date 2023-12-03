@@ -56,6 +56,8 @@ public class TeleOpCenterStage extends OpMode {
 
         wristServoControlHubSide.setDirection(Servo.Direction.REVERSE);
 
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         telemetry.addData("Status","Initialized");
     }
     @Override
@@ -65,6 +67,7 @@ public class TeleOpCenterStage extends OpMode {
         arm();
 
         launch();
+        preset();
     }
 
     private void drive() {
@@ -72,6 +75,24 @@ public class TeleOpCenterStage extends OpMode {
         double forwards = -gamepad1.left_stick_y;
         double sideways = gamepad1.left_stick_x;
         double turn = gamepad1.right_stick_x;
+
+        if (gamepad1.dpad_up) {
+            forwards = 1;
+            sideways = 0;
+            turn = 0;
+        } else if (gamepad1.dpad_down) {
+            forwards = -1;
+            sideways = 0;
+            turn = 0;
+        } else if (gamepad1.dpad_left) {
+            forwards = 0;
+            sideways = 1;
+            turn = 0;
+        } else if (gamepad1.dpad_right) {
+            forwards = 0;
+            sideways = -1;
+            turn = 0;
+        }
 
 //        Stick drift
 //        if (forwards+StickDeadZone>=0 || forwards-StickDeadZone==0) {forwards = 0;}
@@ -102,9 +123,6 @@ public class TeleOpCenterStage extends OpMode {
         frontRightMotor.setPower(frontRightPower);
         backLeftMotor.setPower(backLeftPower);
         backRightMotor.setPower(backRightPower);
-
-        telemetry.addData("Motors", "FL %.4f FR %.4f BL %.4f BR %.4f",
-                frontLeftPower,frontRightPower,backLeftPower,backRightPower);
     }
 
     private void hand() {
@@ -116,6 +134,12 @@ public class TeleOpCenterStage extends OpMode {
             clawDroneSideServo.setPower(0.0);
         }
 
+        telemetry.addData("pow",
+                clawDroneSideServo.getPower() + " " + clawControlHubSideServo.getPower());
+
+        telemetry.addData("controls",
+                "lb: " + gamepad2.left_bumper + " lt: " + (gamepad2.left_trigger>=.25) + " rb: " + gamepad2.right_bumper + " rt: " + (gamepad2.right_trigger>=.25));
+
         if (gamepad2.right_bumper) {
             clawControlHubSideServo.setPower(1.0);
         } else if (gamepad2.right_trigger >= 0.25) {
@@ -124,14 +148,15 @@ public class TeleOpCenterStage extends OpMode {
             clawControlHubSideServo.setPower(0.0);
         }
 
-        position = gamepad2.right_stick_y;
-        if (position > MAX_VALUE_FOR_WRIST_SERVO) {
-            position = MAX_VALUE_FOR_WRIST_SERVO;
-        }else if (position < MIN_VALUE_FOR_WRIST_SERVO){
-            position = MIN_VALUE_FOR_WRIST_SERVO;
-        }
+        if (gamepad2.right_stick_y != 0.0) {
+            position = gamepad2.right_stick_y;
 
-        if (position != 0) {
+            if (position > MAX_VALUE_FOR_WRIST_SERVO) {
+                position = MAX_VALUE_FOR_WRIST_SERVO;
+            } else if (position < MIN_VALUE_FOR_WRIST_SERVO){
+                position = MIN_VALUE_FOR_WRIST_SERVO;
+            }
+
             moveWrist(position);
         }
     }
@@ -145,12 +170,23 @@ public class TeleOpCenterStage extends OpMode {
     }
 
     private void arm() {
-        double power = gamepad2.left_stick_y;
+        double power = -gamepad2.left_stick_y;
         armMotor.setPower(power);
+
+
+        telemetry.addData("armpos",
+                armMotor.getCurrentPosition() + " " + power);
     }
 
     private void moveWrist(double position) {
         wristServoDroneSide.setPosition(position);
         wristServoControlHubSide.setPosition(position);
+    }
+
+    private void preset() {
+        if (gamepad2.a) {
+            wristServoDroneSide.setPosition(.55);
+            wristServoControlHubSide.setPosition(.55);
+        }
     }
 }
