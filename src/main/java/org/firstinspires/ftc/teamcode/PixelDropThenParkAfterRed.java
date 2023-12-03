@@ -15,9 +15,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@Autonomous(name="Pixel Drop No Move After Blue Side", group="Iterative OpMode")
+@Autonomous(name="Pixel Drop move After Red Side", group="Iterative OpMode")
 //@Disabled
-public class PixelDropNoMoveAfterBlue extends OpMode {
+public class PixelDropThenParkAfterRed extends OpMode {
     protected boolean USE_WEBCAM = true;
 
     public static final double MAX_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.97;
@@ -42,9 +42,9 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
     protected BNO055IMU imu = null;
     protected Orientation angles;
 
-    protected boolean goingCenter = false;
-    protected boolean goingLeft = false;
-    protected boolean goingRight = false;
+    protected boolean goingCenter;
+    protected boolean goingLeft;
+    protected boolean goingRight;
 
     protected int positionOfTheTSE = 2; // 1 for left 2 for center 3 for right
     protected int step = 1;
@@ -92,10 +92,11 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
     @Override
     public void init() {
         autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
-        wristServoDroneSide = hardwareMap.get(Servo.class, "wristServoDroneSide");
-        wristServoControlHubSide = hardwareMap.get(Servo.class, "wristServoControlHubSide");
 
         pixelDropperColorSensor = hardwareMap.get(ColorSensor.class, "pixelColorSensor");
+
+        wristServoDroneSide = hardwareMap.get(Servo.class, "wristServoDroneSide");
+        wristServoControlHubSide = hardwareMap.get(Servo.class, "wristServoControlHubSide");
 
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
@@ -121,14 +122,14 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
 
-        teamScoringElementFinder = new TestVisionProcessor(telemetry, false); // Need to change the looking for red value depending on what color we are
+        teamScoringElementFinder = new TestVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
         initAprilTag();
 
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
+
         autoPixelServo.setPosition(CLOSED_VALUE_FOR_PIXEL_DROPPER);
 
         angleOffset = 0;
-
 
         moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
     }
@@ -152,7 +153,6 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
 
     @Override
     public void start() {
-
         if (goingLeft) {
             positionOfTheTSE = 1;
         }else if (goingCenter) {
@@ -269,36 +269,36 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey() && runtime.seconds() > .5) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-                    case 4:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 5:
-                        driveDistanceInches(0.5, -18);
-                        if (runtime.seconds() > 3.0) {
-                            step++;
-                        }
-                        break;
-                    case 6:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 7:
-                        driveDistanceInches(0.25, 3);
-                        if (runtime.seconds() > 1.0) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
+//                    case 3:
+//                        setAllDrivePower(-0.25);
+//                        if (seeingGrey() && runtime.seconds() > .5) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
+//                    case 4:
+//                        runtime.reset();
+//                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        step++;
+//                        break;
+//                    case 5:
+//                        driveDistanceInches(0.5, -18);
+//                        if (runtime.seconds() > 3.0) {
+//                            step++;
+//                        }
+//                        break;
+//                    case 6:
+//                        runtime.reset();
+//                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        step++;
+//                        break;
+//                    case 7:
+//                        driveDistanceInches(0.25, 3);
+//                        if (runtime.seconds() > 1.0) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
 
                 }
                 break;
@@ -502,24 +502,6 @@ public class PixelDropNoMoveAfterBlue extends OpMode {
 //            leftPower = 0;
 //            rightPower = 0;
 //        }
-    }
-
-    private void strafeLeft(int distanceInches, double power){
-        leftFrontDrive.setTargetPosition(-distanceInches);
-        leftBackDrive.setTargetPosition(distanceInches);
-        rightFrontDrive.setTargetPosition(distanceInches);
-        rightBackDrive.setTargetPosition(-distanceInches);
-        setAllDrivePower(power);
-        setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-    private void strafeRight(int value, double power){
-        leftFrontDrive.setTargetPosition(value);
-        leftBackDrive.setTargetPosition(-value);
-        rightFrontDrive.setTargetPosition(-value);
-        rightBackDrive.setTargetPosition(value);
-        setAllDrivePower(power);
-        setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     private void moveWrist(double position) {

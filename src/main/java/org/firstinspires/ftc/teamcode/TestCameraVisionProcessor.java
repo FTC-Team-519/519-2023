@@ -12,7 +12,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 public class TestCameraVisionProcessor extends OpMode {
     private TestVisionProcessor visionProcessor;
     private VisionPortal portal;
-    private Gamepad gamepad1;
+    private Gamepad driver;
     @Override
     public void init() {
         visionProcessor = new TestVisionProcessor(telemetry, true);

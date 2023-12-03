@@ -86,11 +86,16 @@ public class PixelDropNoMoveAfterRed extends OpMode {
     static final double     P_TURN_GAIN            = 0.02;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_GAIN           = 0.03;     // Larger is more responsive, but also less stable
 
+    protected Servo wristServoControlHubSide;
+    protected Servo wristServoDroneSide;
     @Override
     public void init() {
         autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
 
         pixelDropperColorSensor = hardwareMap.get(ColorSensor.class, "pixelColorSensor");
+
+        wristServoDroneSide = hardwareMap.get(Servo.class, "wristServoDroneSide");
+        wristServoControlHubSide = hardwareMap.get(Servo.class, "wristServoControlHubSide");
 
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
@@ -102,6 +107,8 @@ public class PixelDropNoMoveAfterRed extends OpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
+        wristServoControlHubSide.setDirection(Servo.Direction.REVERSE);
+
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -109,7 +116,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = hardwareMap.get(BNO055IMU.class, "imuExpan");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
@@ -118,9 +125,12 @@ public class PixelDropNoMoveAfterRed extends OpMode {
         initAprilTag();
 
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
+
         autoPixelServo.setPosition(CLOSED_VALUE_FOR_PIXEL_DROPPER);
 
         angleOffset = 0;
+
+        moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
     }
 
     @Override
@@ -160,7 +170,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
             case 1: // Going to the left
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 15);
+//                        driveDistanceTime(driveSpeed, 15);
                         if (runtime.seconds() > 3) {
                             step++;
                         }
@@ -258,36 +268,36 @@ public class PixelDropNoMoveAfterRed extends OpMode {
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey() && runtime.seconds() > .5) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-                    case 4:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 5:
-                        driveDistanceInches(0.5, -18);
-                        if (runtime.seconds() > 3.0) {
-                            step++;
-                        }
-                        break;
-                    case 6:
-                        runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        step++;
-                        break;
-                    case 7:
-                        driveDistanceInches(0.25, 3);
-                        if (runtime.seconds() > 1.0) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
+//                    case 3:
+//                        setAllDrivePower(-0.25);
+//                        if (seeingGrey() && runtime.seconds() > .5) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
+//                    case 4:
+//                        runtime.reset();
+//                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        step++;
+//                        break;
+//                    case 5:
+//                        driveDistanceInches(0.5, -18);
+//                        if (runtime.seconds() > 3.0) {
+//                            step++;
+//                        }
+//                        break;
+//                    case 6:
+//                        runtime.reset();
+//                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        step++;
+//                        break;
+//                    case 7:
+//                        driveDistanceInches(0.25, 3);
+//                        if (runtime.seconds() > 1.0) {
+//                            setAllDrivePower(0.0);
+//                            step++;
+//                        }
+//                        break;
 
                 }
                 break;
@@ -441,6 +451,11 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 
     }
 
+    public void driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
+
+        setAllDrivePower(timeElapsed.milliseconds() >= desiredTime ? 0 : speed);
+    }
+
     private void setAllDrivePower(double power) {
         setLeftDrivesPower(power);
         setRightDrivesPower(power);
@@ -493,7 +508,10 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 //        }
     }
 
-
+    private void moveWrist(double position) {
+        wristServoDroneSide.setPosition(position);
+        wristServoControlHubSide.setPosition(position);
+    }
 
     private void initAprilTag() {
 

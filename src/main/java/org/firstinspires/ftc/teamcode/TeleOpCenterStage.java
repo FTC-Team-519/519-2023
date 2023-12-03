@@ -2,16 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="TeleOpCenterStage",group="Iterative OpMode")
 public class TeleOpCenterStage extends OpMode {
-//    private final double StickDeadZone = 0.05;
-
+    private final double StickDeadZone = 0.05;
     protected final ElapsedTime runtime = new ElapsedTime();
     protected DcMotor frontLeftMotor;
     protected DcMotor backLeftMotor;
@@ -29,7 +25,7 @@ public class TeleOpCenterStage extends OpMode {
     public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
-    double position = 0;
+    double position;
     //Once, when INIT is pressed
     @Override
     public void init() {
@@ -57,6 +53,8 @@ public class TeleOpCenterStage extends OpMode {
         wristServoControlHubSide.setDirection(Servo.Direction.REVERSE);
 
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        
+        position = MIN_VALUE_FOR_WRIST_SERVO;
 
         telemetry.addData("Status","Initialized");
     }
@@ -148,17 +146,27 @@ public class TeleOpCenterStage extends OpMode {
             clawControlHubSideServo.setPower(0.0);
         }
 
-        if (gamepad2.right_stick_y != 0.0) {
-            position = gamepad2.right_stick_y;
+        if (gamepad2.x) {
+            position = wristServoDroneSide.getPosition() + 0.005;
 
             if (position > MAX_VALUE_FOR_WRIST_SERVO) {
                 position = MAX_VALUE_FOR_WRIST_SERVO;
-            } else if (position < MIN_VALUE_FOR_WRIST_SERVO){
-                position = MIN_VALUE_FOR_WRIST_SERVO;
             }
-
             moveWrist(position);
         }
+
+        if (gamepad2.b) {
+            position = wristServoDroneSide.getPosition() - 0.005;
+
+            if (position < MIN_VALUE_FOR_WRIST_SERVO) {
+                position = MIN_VALUE_FOR_WRIST_SERVO;
+            }
+            moveWrist(position);
+        }
+
+        telemetry.addData("position",
+                position);
+
     }
 
     private void launch() {
@@ -185,8 +193,8 @@ public class TeleOpCenterStage extends OpMode {
 
     private void preset() {
         if (gamepad2.a) {
-            wristServoDroneSide.setPosition(.55);
-            wristServoControlHubSide.setPosition(.55);
+            wristServoDroneSide.setPosition(0.6);
+            wristServoControlHubSide.setPosition(0.6);
         }
     }
 }
