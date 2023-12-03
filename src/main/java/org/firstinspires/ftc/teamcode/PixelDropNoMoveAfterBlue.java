@@ -14,9 +14,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-@Autonomous(name="Pixel Drop No Move After Red Side", group="Iterative OpMode")
+
+@Autonomous(name="Pixel Drop No Move After Blue Side", group="Iterative OpMode")
 //@Disabled
-public class PixelDropNoMoveAfterRed extends OpMode {
+public class PixelDropNoMoveAfterBlue extends OpMode {
     protected boolean USE_WEBCAM = true;
 
     public static final double MAX_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.97;
@@ -114,7 +115,7 @@ public class PixelDropNoMoveAfterRed extends OpMode {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
 
-        teamScoringElementFinder = new TestVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
+        teamScoringElementFinder = new TestVisionProcessor(telemetry, false); // Need to change the looking for red value depending on what color we are
         initAprilTag();
 
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
@@ -491,6 +492,24 @@ public class PixelDropNoMoveAfterRed extends OpMode {
 //            leftPower = 0;
 //            rightPower = 0;
 //        }
+    }
+
+    private void strafeLeft(int distanceInches, double power){
+        leftFrontDrive.setTargetPosition(-distanceInches);
+        leftBackDrive.setTargetPosition(distanceInches);
+        rightFrontDrive.setTargetPosition(distanceInches);
+        rightBackDrive.setTargetPosition(-distanceInches);
+        setAllDrivePower(power);
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    private void strafeRight(int value, double power){
+        leftFrontDrive.setTargetPosition(value);
+        leftBackDrive.setTargetPosition(-value);
+        rightFrontDrive.setTargetPosition(-value);
+        rightBackDrive.setTargetPosition(value);
+        setAllDrivePower(power);
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
 
