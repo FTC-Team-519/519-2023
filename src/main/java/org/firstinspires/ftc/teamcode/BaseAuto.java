@@ -262,13 +262,24 @@ public class BaseAuto extends OpMode {
     @Override
     public void stop() {}
 
-    protected void driveDistanceTime(double speed, double desiredTime, ElapsedTime timeElapsed) {
-        if (timeElapsed.milliseconds() >= desiredTime) {
+    protected void driveDistanceTime(double speed, double desiredTimeMiliseconds, ElapsedTime timeElapsed) {
+        if (timeElapsed.milliseconds() >= desiredTimeMiliseconds) {
             step++;
             setAllDrivePower(0.0);
         }else {
             setAllDrivePower(speed);
         }
+    }
+
+    protected void driveDistanceInches(double speed, double distanceInches) {
+        setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+    }
+
+    protected void setTargetPosition(int position) {
+        leftFrontDrive.setTargetPosition(position);
+        leftBackDrive.setTargetPosition(position);
+        rightFrontDrive.setTargetPosition(position);
+        rightBackDrive.setTargetPosition(position);
     }
 
     protected void turnRight(double speed, double degree) {
