@@ -89,7 +89,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  */
 
 @Autonomous(name="Robot: Auto Drive By Euro", group="Robot")
-@Disabled
 public class Auto_Test_2 extends LinearOpMode {
 
     /* Declare OpMode members. */
