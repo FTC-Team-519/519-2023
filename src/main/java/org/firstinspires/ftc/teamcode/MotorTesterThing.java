@@ -65,11 +65,17 @@ public class MotorTesterThing extends OpMode {
         backRightMotor.setPower(backRightPower);
 
         telemetry.addData("Status", "Run Time: %s", runtime.toString());
-        telemetry.addData("Motors", "(fr,br,fl,bl) (%.3f %.3f %.3f %.3f)",
-            frontRightPower, backRightPower, frontLeftPower, backLeftPower);
-        telemetry.addData("Encoders", "(fr,br,fl,bl) (%.3f %.3f %.3f %.3f)",
-            frontRightMotor.getCurrentPosition(), backRightMotor.getCurrentPosition(),
-            frontLeftMotor.getCurrentPosition(), backLeftMotor.getCurrentPosition());
+        telemetry.addData("Front Right Motor", frontRightPower);
+        telemetry.addData("Back Right Motor", backRightPower);
+        telemetry.addData("Front Left Motor", frontLeftPower);
+        telemetry.addData("Back Left Motor", backLeftPower);
+        telemetry.addData("Front Right Encoder", frontRightMotor.getCurrentPosition());
+        telemetry.addData("Back Right Encoder", backRightMotor.getCurrentPosition());
+        telemetry.addData("Front Left Encoder", frontLeftMotor.getCurrentPosition());
+        telemetry.addData("Back Left Encoder", backLeftMotor.getCurrentPosition());
+//                telemetry.addData("Encoders", "(fr,br,fl,bl) (%.3f %.3f %.3f %.3f)",
+//            frontRightMotor.getCurrentPosition(), backRightMotor.getCurrentPosition(),
+//            frontLeftMotor.getCurrentPosition(), backLeftMotor.getCurrentPosition());
 
     }
 
