@@ -190,14 +190,24 @@ public class BaseAuto extends OpMode {
             case 2: // Going to Center
                 switch (step) {
                     case 1:
-                        driveDistanceTime(driveSpeed, 5000, runtime);
+                        driveDistanceInches(driveSpeed, 32);
+                        step++;
                         break;
                     case 2:
+                        if (atTargetPosition()) {
+                            step++;
+                            break;
+                        }
+                        if (seeingRed()) {
+                            step++;
+                            break;
+                        }
+                    case 3:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
+                    case 4:
                         setAllDrivePower(-0.25);
                         if (seeingGrey()) {
                             setAllDrivePower(0.0);
@@ -275,6 +285,14 @@ public class BaseAuto extends OpMode {
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
     }
 
+    protected boolean atTargetPosition() {
+        return (
+            leftFrontDrive.getCurrentPosition() == leftFrontDrive.getTargetPosition() &&
+            leftBackDrive.getCurrentPosition() == leftBackDrive.getTargetPosition() &&
+            rightFrontDrive.getCurrentPosition() == rightFrontDrive.getTargetPosition() &&
+            rightBackDrive.getCurrentPosition() == rightBackDrive.getTargetPosition()
+        );
+    }
     protected void setTargetPosition(int position) {
         leftFrontDrive.setTargetPosition(position);
         leftBackDrive.setTargetPosition(position);

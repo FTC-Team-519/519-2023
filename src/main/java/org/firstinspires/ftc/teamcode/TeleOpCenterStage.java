@@ -27,7 +27,8 @@ public class TeleOpCenterStage extends OpMode {
 
     double position;
 
-    final double ARM_SPEED_MULTIPLIER = 0.33;
+//    final double ARM_SPEED_MULTIPLIER = 0.5;
+    final double WRIST_SPEED = 0.005;
     //Once, when INIT is pressed
     @Override
     public void init() {
@@ -149,7 +150,7 @@ public class TeleOpCenterStage extends OpMode {
         }
 
         if (gamepad2.x) {
-            position = wristServoDroneSide.getPosition() + 0.005;
+            position = wristServoDroneSide.getPosition() + WRIST_SPEED;
 
             if (position > MAX_VALUE_FOR_WRIST_SERVO) {
                 position = MAX_VALUE_FOR_WRIST_SERVO;
@@ -158,7 +159,7 @@ public class TeleOpCenterStage extends OpMode {
         }
 
         if (gamepad2.b) {
-            position = wristServoDroneSide.getPosition() - 0.005;
+            position = wristServoDroneSide.getPosition() - WRIST_SPEED;
 
             if (position < MIN_VALUE_FOR_WRIST_SERVO) {
                 position = MIN_VALUE_FOR_WRIST_SERVO;
@@ -182,11 +183,13 @@ public class TeleOpCenterStage extends OpMode {
     private void arm() {
         double power = -gamepad2.left_stick_y;
 
-        if (gamepad1.x) {
-            armMotor.setPower(power);
-        } else {
-            armMotor.setPower(power * ARM_SPEED_MULTIPLIER);
-        }
+//        if (gamepad1.x) {
+//            armMotor.setPower(power);
+//        } else {
+//            armMotor.setPower(power * ARM_SPEED_MULTIPLIER);
+//        }
+
+        armMotor.setPower(power);
 
         telemetry.addData("armpos",
                 armMotor.getCurrentPosition() + " " + power);
