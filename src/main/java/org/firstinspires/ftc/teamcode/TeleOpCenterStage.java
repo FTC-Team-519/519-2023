@@ -9,10 +9,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TeleOpCenterStage extends OpMode {
     private final double StickDeadZone = 0.05;
     protected final ElapsedTime runtime = new ElapsedTime();
-    protected DcMotor frontLeftMotor;
-    protected DcMotor backLeftMotor;
-    protected DcMotor frontRightMotor;
-    protected DcMotor backRightMotor;
+    protected DcMotor leftFrontDrive = null;
+    protected DcMotor leftBackDrive = null;
+    protected DcMotor rightFrontDrive = null;
+    protected DcMotor rightBackDrive = null;
     protected CRServo clawDroneSideServo;
 
     protected CRServo clawControlHubSideServo;
@@ -27,19 +27,22 @@ public class TeleOpCenterStage extends OpMode {
 
     double position;
 
-    final double ARM_SPEED_MULTIPLIER = 0.33;
+//    final double ARM_SPEED_MULTIPLIER = 0.5;
+    final double WRIST_SPEED = 0.005;
     //Once, when INIT is pressed
     @Override
     public void init() {
-        frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
-        backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
-        frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
-        backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
+        setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "backRightMotor");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRightMotor");
+
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         clawDroneSideServo = hardwareMap.get(CRServo.class, "grabberServo1");
         clawControlHubSideServo = hardwareMap.get(CRServo.class, "grabberServo2");
@@ -119,10 +122,10 @@ public class TeleOpCenterStage extends OpMode {
             backLeftPower   /= max;
             backRightPower  /= max;
         }
-        frontLeftMotor.setPower(frontLeftPower);
-        frontRightMotor.setPower(frontRightPower);
-        backLeftMotor.setPower(backLeftPower);
-        backRightMotor.setPower(backRightPower);
+        leftFrontDrive.setPower(frontLeftPower);
+        rightFrontDrive.setPower(frontRightPower);
+        leftBackDrive.setPower(backLeftPower);
+        rightBackDrive.setPower(backRightPower);
     }
 
     private void hand() {
@@ -149,7 +152,7 @@ public class TeleOpCenterStage extends OpMode {
         }
 
         if (gamepad2.x) {
-            position = wristServoDroneSide.getPosition() + 0.005;
+            position = wristServoDroneSide.getPosition() + WRIST_SPEED;
 
             if (position > MAX_VALUE_FOR_WRIST_SERVO) {
                 position = MAX_VALUE_FOR_WRIST_SERVO;
@@ -158,7 +161,7 @@ public class TeleOpCenterStage extends OpMode {
         }
 
         if (gamepad2.b) {
-            position = wristServoDroneSide.getPosition() - 0.005;
+            position = wristServoDroneSide.getPosition() - WRIST_SPEED;
 
             if (position < MIN_VALUE_FOR_WRIST_SERVO) {
                 position = MIN_VALUE_FOR_WRIST_SERVO;
@@ -182,11 +185,13 @@ public class TeleOpCenterStage extends OpMode {
     private void arm() {
         double power = -gamepad2.left_stick_y;
 
-        if (gamepad1.x) {
-            armMotor.setPower(power);
-        } else {
-            armMotor.setPower(power * ARM_SPEED_MULTIPLIER);
-        }
+//        if (gamepad1.x) {
+//            armMotor.setPower(power);
+//        } else {
+//            armMotor.setPower(power * ARM_SPEED_MULTIPLIER);
+//        }
+
+        armMotor.setPower(power);
 
         telemetry.addData("armpos",
                 armMotor.getCurrentPosition() + " " + power);
@@ -202,5 +207,12 @@ public class TeleOpCenterStage extends OpMode {
             wristServoDroneSide.setPosition(0.6);
             wristServoControlHubSide.setPosition(0.6);
         }
+    }
+
+    private void setDriveMode(DcMotor.RunMode mode) {
+        leftFrontDrive.setMode(mode);
+        leftBackDrive.setMode(mode);
+        rightFrontDrive.setMode(mode);
+        rightBackDrive.setMode(mode);
     }
 }

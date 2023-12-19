@@ -52,7 +52,7 @@ public class BaseAuto extends OpMode {
 
     protected boolean onRedTeam = true;
 
-    protected int positionOfTheTSE = 2; // 1 for left 2 for center 3 for right
+    protected int positionOfTheTSE = 3; // 1 for left 2 for center 3 for right
     protected int step = 1;
 
     protected ElapsedTime runtime = new ElapsedTime();
@@ -214,19 +214,29 @@ public class BaseAuto extends OpMode {
             case 2: // Going to Center
                 switch (step) {
                     case 1:
-                        driveDistanceTime(driveSpeed, 5000, runtime);
+                        driveDistanceInches(driveSpeed, 36,onRedTeam,!onRedTeam);
+
+                        step++;
                         break;
                     case 2:
+                        if (atTargetPosition()) {
+                            step++;
+                        }
+                        if (onRedTeam && seeingRed() || !onRedTeam && seeingBlue()) {
+                            step++;
+                        }
+                        break;
+                    case 3:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
+                    case 4:
                         setAllDrivePower(-0.25);
                         if (seeingGrey()) {
                             setAllDrivePower(0.0);
+                            step++;
                         }
-                        step++;
                         break;
                 }
                 break;
@@ -276,10 +286,16 @@ public class BaseAuto extends OpMode {
                 }
         }
         telemetry.addData("Step:", step);
-
         telemetry.addData("Heading", yaw);
         telemetry.addData("Pitch", pitch);
         telemetry.addData("Roll", roll);
+        telemetry.addData("TSE position:", "%d", positionOfTheTSE);
+
+        displayTargetAndActualPosition(leftFrontDrive);
+        displayTargetAndActualPosition(leftBackDrive);
+        displayTargetAndActualPosition(rightFrontDrive);
+        displayTargetAndActualPosition(rightBackDrive);
+
         telemetry.update();
     }
 
@@ -295,15 +311,48 @@ public class BaseAuto extends OpMode {
         }
     }
 
-    protected void driveDistanceInches(double speed, double distanceInches) {
+    protected void driveDistanceInches(double speed, double distanceInches, boolean senseRed, boolean senseBlue) {
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+        if(senseRed && !senseBlue) {
+            while (!atTargetPosition() && !seeingRed()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else if (senseBlue && !senseRed) {
+            while (!atTargetPosition() && !seeingBlue()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else if (senseBlue && senseRed) {
+            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else {
+            while(!atTargetPosition()) {
+                setAllDrivePower(speed);
+            }
+        }
+        setAllDrivePower(0);
     }
 
+    protected boolean atTargetPosition() {
+        return (
+            leftFrontDrive.getCurrentPosition() >= leftFrontDrive.getTargetPosition() &&
+            leftBackDrive.getCurrentPosition() >= leftBackDrive.getTargetPosition() &&
+            rightFrontDrive.getCurrentPosition() >= rightFrontDrive.getTargetPosition() &&
+            rightBackDrive.getCurrentPosition() >= rightBackDrive.getTargetPosition()
+        );
+    }
     protected void setTargetPosition(int position) {
         leftFrontDrive.setTargetPosition(position);
         leftBackDrive.setTargetPosition(position);
         rightFrontDrive.setTargetPosition(position);
         rightBackDrive.setTargetPosition(position);
+    }
+
+    private void displayTargetAndActualPosition(DcMotor motor) {
+        telemetry.addData(motor.getDeviceName(), "Target: %d, Actual: %d", motor.getTargetPosition(), motor.getCurrentPosition());
     }
 
     protected void turnRight(double speed, double degree) {
