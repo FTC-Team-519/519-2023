@@ -1,19 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.*;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection;
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection;
 
 
 public class BaseAuto extends OpMode {
@@ -36,8 +38,13 @@ public class BaseAuto extends OpMode {
     protected Servo autoPixelServo = null;
     protected ColorSensor pixelDropperColorSensor;
 
-    protected BNO055IMU imu = null;
-    protected Orientation angles;
+    protected IMU imu = null;
+
+    boolean orientationIsValid = false;
+    //protected Orientation angles;
+    double yaw;
+    double pitch;
+    double roll;
 
     private boolean goingCenter = false;
     private boolean goingLeft = false;
@@ -89,10 +96,23 @@ public class BaseAuto extends OpMode {
         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        imu = hardwareMap.get(BNO055IMU.class, "imuExpan");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu.initialize(parameters);
+        imu = hardwareMap.get(IMU.class, "imuExpan");
+//        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+//        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+//        imu.initialize(parameters);
+        orientationIsValid = false;
+        yaw = 0.0d;
+        pitch = 0.0d;
+        roll = 0.0d;
+
+        try {
+            RevHubOrientationOnRobot orientationOnRobot =
+                    new RevHubOrientationOnRobot(LogoFacingDirection.RIGHT, UsbFacingDirection.BACKWARD);
+            imu.initialize(new IMU.Parameters(orientationOnRobot));
+            orientationIsValid = true;
+        } catch (IllegalArgumentException e) {
+            orientationIsValid = false;
+        }
 
         initAprilTag();
 
@@ -140,7 +160,11 @@ public class BaseAuto extends OpMode {
     @Override
     public void loop() {
 
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        YawPitchRollAngles yawPitchRollAngles = imu.getRobotYawPitchRollAngles();
+        yaw = yawPitchRollAngles.getYaw(AngleUnit.DEGREES);
+        pitch = yawPitchRollAngles.getPitch(AngleUnit.DEGREES);
+        roll = yawPitchRollAngles.getRoll(AngleUnit.DEGREES);
         switch (positionOfTheTSE) {
             case 1: // Going to the left
                 switch (step) {
@@ -262,11 +286,10 @@ public class BaseAuto extends OpMode {
                 }
         }
         telemetry.addData("Step:", step);
+        telemetry.addData("Heading", yaw);
+        telemetry.addData("Pitch", pitch);
+        telemetry.addData("Roll", roll);
         telemetry.addData("TSE position:", "%d", positionOfTheTSE);
-        telemetry.addData("Heading", angles.firstAngle);
-        telemetry.addData("Pitch", angles.secondAngle);
-        telemetry.addData("Roll", angles.thirdAngle);
-
 
         displayTargetAndActualPosition(leftFrontDrive);
         displayTargetAndActualPosition(leftBackDrive);
@@ -336,7 +359,7 @@ public class BaseAuto extends OpMode {
         double targetDegree = angleOffset - degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
-        if (angles.firstAngle >= targetDegree) {
+        if (yaw >= targetDegree) {
             setLeftDrivesPower(speed);
             setRightDrivesPower(-speed);
         } else {
@@ -348,7 +371,7 @@ public class BaseAuto extends OpMode {
         double targetDegree = angleOffset + degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
-        if (angles.firstAngle <= targetDegree) {
+        if (yaw <= targetDegree) {
             setLeftDrivesPower(-speed);
             setRightDrivesPower(speed);
         } else {
