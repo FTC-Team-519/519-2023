@@ -23,6 +23,9 @@ public class BaseAuto extends OpMode {
     protected static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
     protected static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.34;
     protected static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.40;
+
+    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.45;
+    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.2;
     protected static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
@@ -36,6 +39,7 @@ public class BaseAuto extends OpMode {
     protected DcMotor rightBackDrive = null;
 
     protected Servo autoPixelServo = null;
+    protected Servo autoBackdrop = null;
     protected ColorSensor pixelDropperColorSensor;
 
     protected IMU imu = null;
@@ -71,6 +75,7 @@ public class BaseAuto extends OpMode {
     @Override
     public void init() {
         autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
+        autoBackdrop = hardwareMap.get(Servo.class, "autoBackdrop");
         wristServoDroneSide = hardwareMap.get(Servo.class, "wristServoDroneSide");
         wristServoControlHubSide = hardwareMap.get(Servo.class, "wristServoControlHubSide");
 
@@ -109,14 +114,16 @@ public class BaseAuto extends OpMode {
             RevHubOrientationOnRobot orientationOnRobot =
                     new RevHubOrientationOnRobot(LogoFacingDirection.RIGHT, UsbFacingDirection.BACKWARD);
             imu.initialize(new IMU.Parameters(orientationOnRobot));
+            imu.resetYaw();
+
             orientationIsValid = true;
         } catch (IllegalArgumentException e) {
             orientationIsValid = false;
         }
 
-        initAprilTag();
 
         autoPixelServo.setPosition(CLOSED_VALUE_FOR_PIXEL_DROPPER);
+        autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
 
         angleOffset = 0;
 
