@@ -45,7 +45,7 @@ public class BaseAuto extends OpMode {
 
     protected boolean onRedTeam = true;
 
-    protected int positionOfTheTSE = 2; // 1 for left 2 for center 3 for right
+    protected int positionOfTheTSE = 3; // 1 for left 2 for center 3 for right
     protected int step = 1;
 
     protected ElapsedTime runtime = new ElapsedTime();
@@ -190,7 +190,7 @@ public class BaseAuto extends OpMode {
             case 2: // Going to Center
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 36);
+                        driveDistanceInches(driveSpeed, 36,onRedTeam,!onRedTeam);
 
                         step++;
                         break;
@@ -198,7 +198,7 @@ public class BaseAuto extends OpMode {
                         if (atTargetPosition()) {
                             step++;
                         }
-                        if (seeingRed()) {
+                        if (onRedTeam && seeingRed() || !onRedTeam && seeingBlue()) {
                             step++;
                         }
                         break;
@@ -288,10 +288,27 @@ public class BaseAuto extends OpMode {
         }
     }
 
-    protected void driveDistanceInches(double speed, double distanceInches) {
+    protected void driveDistanceInches(double speed, double distanceInches, boolean senseRed, boolean senseBlue) {
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
-        while(!atTargetPosition() && !seeingRed()){
-            setAllDrivePower(speed);
+        if(senseRed && !senseBlue) {
+            while (!atTargetPosition() && !seeingRed()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else if (senseBlue && !senseRed) {
+            while (!atTargetPosition() && !seeingBlue()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else if (senseBlue && senseRed) {
+            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
+                setAllDrivePower(speed);
+            }
+        }
+        else {
+            while(!atTargetPosition()) {
+                setAllDrivePower(speed);
+            }
         }
         setAllDrivePower(0);
     }
