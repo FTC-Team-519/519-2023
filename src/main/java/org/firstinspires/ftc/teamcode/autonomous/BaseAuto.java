@@ -87,7 +87,7 @@ public class BaseAuto extends OpMode {
         DONE
     }
 
-    private PixelDropStep step = ;
+    private PixelDropStep step = PixelDropStep.START;
 
     @Override
     public void init() {
