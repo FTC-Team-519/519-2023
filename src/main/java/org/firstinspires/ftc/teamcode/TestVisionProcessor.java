@@ -7,12 +7,16 @@ import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Mat;
 
 public class TestVisionProcessor implements VisionProcessor {
+    public enum TSESide {
+        LEFT,
+        CENTER,
+        RIGHT,
+        UNKNOWN,
+    }
     private final Telemetry telemetry;
+    private volatile TSESide tseSide = TSESide.UNKNOWN;
     private boolean isRed;
-    private boolean center;
-    private boolean left;
-    private boolean right;
-    private boolean stopped = false;
+    private volatile boolean stopped = false;
 
     public TestVisionProcessor(Telemetry telemetry, boolean lookingForRed) {
         isRed = lookingForRed;
@@ -20,9 +24,7 @@ public class TestVisionProcessor implements VisionProcessor {
     }
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        left = false;
-        right = false;
-        center = false;
+        tseSide = TSESide.UNKNOWN;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class TestVisionProcessor implements VisionProcessor {
         int leftSideTimesSeen = 0;
         int centerTimesSeen = 0;
         int rightSideTimesSeen = 0;
-        double startTime = System.currentTimeMillis();
+        //double startTime = System.currentTimeMillis();
 
         if (!stopped) {
             for (int row = 240; row < 480; row++) {
@@ -60,26 +62,18 @@ public class TestVisionProcessor implements VisionProcessor {
                     }
                 }
             }
-            double endTime = System.currentTimeMillis();
+            //double endTime = System.currentTimeMillis();
             if (leftSideTimesSeen > centerTimesSeen && leftSideTimesSeen > rightSideTimesSeen) {
-                left = true;
-                right = false;
-                center = false;
+                tseSide = TSESide.LEFT;
                 telemetry.addData("Where the TSE is: ", "Left Side");
             } else if (centerTimesSeen > leftSideTimesSeen && centerTimesSeen > rightSideTimesSeen) {
-                center = true;
-                left = false;
-                right = false;
+                tseSide = TSESide.CENTER;
                 telemetry.addData("Where the TSE is: ", "Center");
             } else if (rightSideTimesSeen > leftSideTimesSeen && rightSideTimesSeen > centerTimesSeen) {
-                right = true;
-                center = false;
-                left = false;
+                tseSide = TSESide.RIGHT;
                 telemetry.addData("Where the TSE is: ", "Right Side");
             } else {
-                left = false;
-                right = false;
-                center = false;
+                tseSide = TSESide.UNKNOWN;
                 telemetry.addData("Where the TSE is: ", "Not Found");
             }
         }
@@ -89,7 +83,7 @@ public class TestVisionProcessor implements VisionProcessor {
 //        telemetry.addData("Width: ", frame.width());
 //        telemetry.addData("Height", frame.height());
 //        telemetry.addData("Time Elapsed: ", (endTime - startTime));
-        telemetry.update();
+//        telemetry.update();
         return null;
     }
 
@@ -105,15 +99,23 @@ public class TestVisionProcessor implements VisionProcessor {
 
 
     public boolean isLeft() {
-        return left;
+        return tseSide == TSESide.LEFT;
     }
 
     public boolean isCenter() {
-        return center;
+        return tseSide == TSESide.CENTER;
     }
 
     public boolean isRight() {
-        return right;
+        return tseSide == TSESide.RIGHT;
+    }
+
+    public boolean isNotFound() {
+        return tseSide == TSESide.UNKNOWN;
+    }
+
+    public TSESide getTseSide() {
+        return tseSide;
     }
 
     public void stop() {
