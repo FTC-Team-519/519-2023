@@ -1,12 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autonomous;
 
 import android.graphics.Canvas;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
-import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Mat;
 
-public class TestVisionProcessor implements VisionProcessor {
+public class TSEVisionProcessor implements org.firstinspires.ftc.vision.VisionProcessor {
     private final Telemetry telemetry;
     private boolean isRed;
     private boolean center;
@@ -14,7 +13,7 @@ public class TestVisionProcessor implements VisionProcessor {
     private boolean right;
     private boolean stopped = false;
 
-    public TestVisionProcessor(Telemetry telemetry, boolean lookingForRed) {
+    public TSEVisionProcessor(Telemetry telemetry, boolean lookingForRed) {
         isRed = lookingForRed;
         this.telemetry = telemetry;
     }

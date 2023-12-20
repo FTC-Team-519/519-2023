@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -27,7 +27,7 @@ public class PixelDropThenParkAfterRed extends OpMode {
     public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
-    protected TestVisionProcessor teamScoringElementFinder;
+    protected TSEVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
 
     protected DcMotor leftFrontDrive = null;
@@ -122,7 +122,7 @@ public class PixelDropThenParkAfterRed extends OpMode {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
 
-        teamScoringElementFinder = new TestVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
+        teamScoringElementFinder = new TSEVisionProcessor(telemetry, true); // Need to change the looking for red value depending on what color we are
         initAprilTag();
 
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);

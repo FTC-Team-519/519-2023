@@ -1,15 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.*;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -30,7 +27,7 @@ public class BaseAuto extends OpMode {
     protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
     protected AprilTagProcessor aprilTagProcessor;
-    protected TestVisionProcessor teamScoringElementFinder;
+    protected TSEVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
 
     protected DcMotor leftFrontDrive = null;
@@ -166,7 +163,6 @@ public class BaseAuto extends OpMode {
 
     @Override
     public void loop() {
-
         //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         YawPitchRollAngles yawPitchRollAngles = imu.getRobotYawPitchRollAngles();
         yaw = yawPitchRollAngles.getYaw(AngleUnit.DEGREES);
@@ -176,38 +172,46 @@ public class BaseAuto extends OpMode {
             case 1: // Going to the left
                 switch (step) {
                     case 1:
-                        driveDistanceTime(driveSpeed, 5000, runtime);
+//                        driveDistanceTime(driveSpeed, 5000, runtime);
+                        driveDistanceInches(0.25, 12);
+                        step++;
                         break;
                     case 2:
+                        if (runtime.milliseconds() > 3000) {
+                            step++;
+                        }
+                        break;
+                    case 3:
+                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step++;
                         break;
-                    case 3:
+                    case 4:
                         turnLeft(0.25, 45);
                         if (runtime.seconds() > 4.0) {
                             step++;
                         }
                         break;
-                    case 4:
+                    case 5:
                         runtime.reset();
                         step++;
                         break;
-                    case 5:
+                    case 6:
                         setAllDrivePower(0.25);
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
                             step++;
                         }
                         break;
-                    case 6:
+                    case 7:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         step++;
                         break;
-                    case 7:
+                    case 8:
                         runtime.reset();
                         step++;
                         break;
-                    case 8:
+                    case 9:
                         setAllDrivePower(-0.25);
                         if (seeingGrey() && runtime.seconds() > .5) {
                             setAllDrivePower(0.0);
@@ -221,19 +225,15 @@ public class BaseAuto extends OpMode {
             case 2: // Going to Center
                 switch (step) {
                     case 1:
-                        driveDistanceInches(driveSpeed, 36,onRedTeam,!onRedTeam);
-
-                        step++;
+//                        driveDistanceInches(driveSpeed, 36);
+                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
+                            setAllDrivePower(0.0);
+                            step++;
+                        }else {
+                            setAllDrivePower(0.25);
+                        }
                         break;
                     case 2:
-                        if (atTargetPosition()) {
-                            step++;
-                        }
-                        if (onRedTeam && seeingRed() || !onRedTeam && seeingBlue()) {
-                            step++;
-                        }
-                        break;
-                    case 3:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         runtime.reset();
                         step++;
@@ -318,29 +318,31 @@ public class BaseAuto extends OpMode {
         }
     }
 
-    protected void driveDistanceInches(double speed, double distanceInches, boolean senseRed, boolean senseBlue) {
+    protected void driveDistanceInches(double speed, double distanceInches) {
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
-        if(senseRed && !senseBlue) {
-            while (!atTargetPosition() && !seeingRed()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else if (senseBlue && !senseRed) {
-            while (!atTargetPosition() && !seeingBlue()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else if (senseBlue && senseRed) {
-            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else {
-            while(!atTargetPosition()) {
-                setAllDrivePower(speed);
-            }
-        }
-        setAllDrivePower(0);
+        setAllDrivePower(speed);
+//        if(senseRed && !senseBlue) {
+//            while (!atTargetPosition() && !seeingRed()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else if (senseBlue && !senseRed) {
+//            while (!atTargetPosition() && !seeingBlue()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else if (senseBlue && senseRed) {
+//            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else {
+//            while(!atTargetPosition()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        setAllDrivePower(0);
     }
 
     protected boolean atTargetPosition() {
