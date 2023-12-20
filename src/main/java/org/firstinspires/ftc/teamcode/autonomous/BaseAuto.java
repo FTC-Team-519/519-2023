@@ -461,6 +461,6 @@ public class BaseAuto extends OpMode {
     }
 
     public boolean isDone() {
-        return step PixelDropStep.DONE;
+        return step == PixelDropStep.DONE;
     }
 }
