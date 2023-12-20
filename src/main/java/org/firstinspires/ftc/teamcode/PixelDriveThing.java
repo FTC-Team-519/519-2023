@@ -144,9 +144,9 @@ public class PixelDriveThing extends LinearOpMode {
 			imu.resetYaw();
 
 
-			boolean spikeLeft = visionProcessor.getLeft();
-			boolean spikeCenter = visionProcessor.getCenter();
-			boolean spikeRight = visionProcessor.getRight();
+			boolean spikeLeft = visionProcessor.isLeft();
+			boolean spikeCenter = visionProcessor.isCenter();
+			boolean spikeRight = visionProcessor.isRight();
 
 			if (!opModeIsActive()) return;
 			driveStraight(DRIVE_SPEED, 15, 0);
