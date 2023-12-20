@@ -7,4 +7,7 @@ public class PixelDropThenParkBlue extends PixelDropNoMoveAfterBlue {
     }
 
     @Override
+    public void init_loop() {
+
+    }
 }
