@@ -85,6 +85,7 @@ public class BaseAutoTestToHome extends OpMode {
         DRIVE_TO_SPIKE,
         DROP_PIXEL,
         FINAL_RESET,
+        DRIVE_BACK_TO_HOME,
         DONE
     }
 
@@ -185,43 +186,45 @@ public class BaseAutoTestToHome extends OpMode {
                     case START:
 //                        driveDistanceTime(driveSpeed, 5000, runtime);
                         driveDistanceInches(0.25, 12);
-                        step=PixelDropStep.CHECK_TARGET;
+                        step = PixelDropStep.CHECK_TARGET;
                         break;
                     case CHECK_TARGET:
                         if (atTargetPosition()) {
-                            step=PixelDropStep.RUN_TIME_RESET_FOR_TURN;
+                            step = PixelDropStep.RUN_TIME_RESET_FOR_TURN;
                             distance_traveled_forward = leftFrontDrive.getCurrentPosition();
                         }
                         break;
                     case RUN_TIME_RESET_FOR_TURN:
 //                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
-                        step=PixelDropStep.TURN_TO_SPIKE;
+                        step = PixelDropStep.TURN_TO_SPIKE;
                         break;
                     case TURN_TO_SPIKE:
                         boolean leftTurnIsDone = turnLeft(0.25, 45);
                         if (runtime.seconds() > 4.0 || leftTurnIsDone) {
-                            step=PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
+                            step = PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
                         }
                         break;
                     case RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE:
                         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         runtime.reset();
-                        step=PixelDropStep.DRIVE_TO_SPIKE;
+                        step = PixelDropStep.DRIVE_TO_SPIKE;
                         break;
                     case DRIVE_TO_SPIKE:
                         setAllDrivePower(0.25);
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
-                            step=PixelDropStep.DROP_PIXEL;
+                            step = PixelDropStep.DROP_PIXEL;
                             distance_traveled_to_pixel = leftFrontDrive.getCurrentPosition();
                         }
                         break;
                     case DROP_PIXEL:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
-                        step=PixelDropStep.FINAL_RESET;
+                        step = PixelDropStep.FINAL_RESET;
                         break;
                     case DRIVE_BACK_TO_HOME:
+                        break;
+
 
 
                     case FINAL_RESET:

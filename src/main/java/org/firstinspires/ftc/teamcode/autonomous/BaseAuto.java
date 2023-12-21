@@ -178,7 +178,7 @@ public class BaseAuto extends OpMode {
                 switch (step) {
                     case START:
 //                        driveDistanceTime(driveSpeed, 5000, runtime);
-                        driveDistanceInches(0.25, 12);
+                        driveDistanceInches(0.25, 24);
                         step=PixelDropStep.CHECK_TARGET;
                         break;
                     case CHECK_TARGET:
@@ -230,12 +230,13 @@ public class BaseAuto extends OpMode {
                     case DRIVE_TO_SPIKE:
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
-                            step=PixelDropStep.FINAL_RESET;
+                            step=PixelDropStep.DROP_PIXEL;
                         }
                         break;
                     case DROP_PIXEL:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         step = PixelDropStep.FINAL_RESET;
+                        break;
                     case FINAL_RESET:
                         runtime.reset();
                         step=PixelDropStep.DONE;
@@ -247,7 +248,7 @@ public class BaseAuto extends OpMode {
             case RIGHT: // Going to the right
                 switch (step) {
                     case START:
-                        driveDistanceInches(0.25, 12);
+                        driveDistanceInches(0.25, 24);
                         step=PixelDropStep.CHECK_TARGET;
                         break;
                     case CHECK_TARGET:
@@ -290,7 +291,7 @@ public class BaseAuto extends OpMode {
         telemetry.addData("Heading", yaw);
         telemetry.addData("Pitch", pitch);
         telemetry.addData("Roll", roll);
-        telemetry.addData("TSE position:", "%d", positionOfTheTSE);
+        telemetry.addData("TSE position:", positionOfTheTSE);
 
         displayTargetAndActualPosition(leftFrontDrive);
         displayTargetAndActualPosition(leftBackDrive);
@@ -313,8 +314,10 @@ public class BaseAuto extends OpMode {
 //    }
 
     protected void driveDistanceInches(double speed, double distanceInches) {
-        setMode(DcMotor.RunMode.RUN_TO_POSITION);
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
+
+//        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         setAllDrivePower(speed);
 //        if(senseRed && !senseBlue) {
 //            while (!atTargetPosition() && !seeingRed()) {
