@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -86,6 +87,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Autonomous(name="Omni Drive To AprilTag", group = "Concept")
+@Disabled
 public class DriveToAprilTagOmni extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.

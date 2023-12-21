@@ -13,6 +13,7 @@ public class PixelDropThenParkRed extends PixelDropNoMoveAfterRed {
     @Override
     public void init() {
         super.init();
+        parkingSteps = ParkingSteps.GO_FORWARD_INCHS;
     }
 
     @Override
