@@ -61,13 +61,13 @@ public class BaseAuto extends OpMode {
     private static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
     private static final double     WHEEL_DIAMETER_INCHES   = 4;     // For figuring circumference
     private static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-
     protected double  driveSpeed    = 0.25;
-
     protected double angleOffset;
-
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
+
+    private int distance_forward  =0;
+    private int distance_to_spike =0;
 
     protected enum PositionOfTSE {
         LEFT,
@@ -178,7 +178,7 @@ public class BaseAuto extends OpMode {
                 switch (step) {
                     case START:
 //                        driveDistanceTime(driveSpeed, 5000, runtime);
-                        driveDistanceInches(0.25, 24);
+                        driveDistanceInches(driveSpeed, 22);
                         step=PixelDropStep.CHECK_TARGET;
                         break;
                     case CHECK_TARGET:
@@ -192,7 +192,7 @@ public class BaseAuto extends OpMode {
                         step=PixelDropStep.TURN_TO_SPIKE;
                         break;
                     case TURN_TO_SPIKE:
-                        boolean leftTurnIsDone = turnLeft(0.25, 45);
+                        boolean leftTurnIsDone = turnLeft(driveSpeed, 45);
                         if (runtime.seconds() > 4.0 || leftTurnIsDone) {
                             step=PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
                         }
@@ -202,7 +202,7 @@ public class BaseAuto extends OpMode {
                         step=PixelDropStep.DRIVE_TO_SPIKE;
                         break;
                     case DRIVE_TO_SPIKE:
-                        setAllDrivePower(0.25);
+                        setAllDrivePower(driveSpeed);
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
                             step=PixelDropStep.DROP_PIXEL;
@@ -224,7 +224,7 @@ public class BaseAuto extends OpMode {
                 switch (step) {
                     case START:
 //                        driveDistanceInches(driveSpeed, 36);
-                        setAllDrivePower(0.25);
+                        setAllDrivePower(driveSpeed);
                         step = PixelDropStep.DRIVE_TO_SPIKE;
                         break;
                     case DRIVE_TO_SPIKE:
@@ -248,7 +248,7 @@ public class BaseAuto extends OpMode {
             case RIGHT: // Going to the right
                 switch (step) {
                     case START:
-                        driveDistanceInches(0.25, 24);
+                        driveDistanceInches(driveSpeed, 22);
                         step=PixelDropStep.CHECK_TARGET;
                         break;
                     case CHECK_TARGET:
@@ -261,7 +261,7 @@ public class BaseAuto extends OpMode {
                         step=PixelDropStep.TURN_TO_SPIKE;
                         break;
                     case TURN_TO_SPIKE:
-                        boolean rightTurnIsDone = turnRight(0.25, 45);
+                        boolean rightTurnIsDone = turnRight(driveSpeed, 45);
                         if (runtime.seconds() > 4.0 || rightTurnIsDone) {
                             step=PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
                         }
@@ -271,7 +271,7 @@ public class BaseAuto extends OpMode {
                         step=PixelDropStep.DRIVE_TO_SPIKE;
                         break;
                     case DRIVE_TO_SPIKE:
-                        setAllDrivePower(0.25);
+                        setAllDrivePower(driveSpeed);
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
                             step=PixelDropStep.DROP_PIXEL;
