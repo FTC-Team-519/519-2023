@@ -1,30 +1,27 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autonomous;
 
 import android.graphics.Canvas;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
-import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Mat;
 
-public class TestVisionProcessor implements VisionProcessor {
-    public enum TSESide {
-        LEFT,
-        CENTER,
-        RIGHT,
-        UNKNOWN,
-    }
+public class TSEVisionProcessor implements org.firstinspires.ftc.vision.VisionProcessor {
     private final Telemetry telemetry;
-    private volatile TSESide tseSide = TSESide.UNKNOWN;
     private boolean isRed;
-    private volatile boolean stopped = false;
+    private boolean center;
+    private boolean left;
+    private boolean right;
+    private boolean stopped = false;
 
-    public TestVisionProcessor(Telemetry telemetry, boolean lookingForRed) {
+    public TSEVisionProcessor(Telemetry telemetry, boolean lookingForRed) {
         isRed = lookingForRed;
         this.telemetry = telemetry;
     }
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        tseSide = TSESide.UNKNOWN;
+        left = false;
+        right = false;
+        center = false;
     }
 
     @Override
@@ -32,7 +29,7 @@ public class TestVisionProcessor implements VisionProcessor {
         int leftSideTimesSeen = 0;
         int centerTimesSeen = 0;
         int rightSideTimesSeen = 0;
-        //double startTime = System.currentTimeMillis();
+        double startTime = System.currentTimeMillis();
 
         if (!stopped) {
             for (int row = 240; row < 480; row++) {
@@ -62,18 +59,26 @@ public class TestVisionProcessor implements VisionProcessor {
                     }
                 }
             }
-            //double endTime = System.currentTimeMillis();
+            double endTime = System.currentTimeMillis();
             if (leftSideTimesSeen > centerTimesSeen && leftSideTimesSeen > rightSideTimesSeen) {
-                tseSide = TSESide.LEFT;
+                left = true;
+                right = false;
+                center = false;
                 telemetry.addData("Where the TSE is: ", "Left Side");
             } else if (centerTimesSeen > leftSideTimesSeen && centerTimesSeen > rightSideTimesSeen) {
-                tseSide = TSESide.CENTER;
+                center = true;
+                left = false;
+                right = false;
                 telemetry.addData("Where the TSE is: ", "Center");
             } else if (rightSideTimesSeen > leftSideTimesSeen && rightSideTimesSeen > centerTimesSeen) {
-                tseSide = TSESide.RIGHT;
+                right = true;
+                center = false;
+                left = false;
                 telemetry.addData("Where the TSE is: ", "Right Side");
             } else {
-                tseSide = TSESide.UNKNOWN;
+                left = false;
+                right = false;
+                center = false;
                 telemetry.addData("Where the TSE is: ", "Not Found");
             }
         }
@@ -83,7 +88,7 @@ public class TestVisionProcessor implements VisionProcessor {
 //        telemetry.addData("Width: ", frame.width());
 //        telemetry.addData("Height", frame.height());
 //        telemetry.addData("Time Elapsed: ", (endTime - startTime));
-//        telemetry.update();
+        telemetry.update();
         return null;
     }
 
@@ -97,25 +102,16 @@ public class TestVisionProcessor implements VisionProcessor {
 //        telemetry.addData("Canvas Width: ", canvas.getWidth());
     }
 
-
     public boolean isLeft() {
-        return tseSide == TSESide.LEFT;
+        return left;
     }
 
     public boolean isCenter() {
-        return tseSide == TSESide.CENTER;
+        return center;
     }
 
     public boolean isRight() {
-        return tseSide == TSESide.RIGHT;
-    }
-
-    public boolean isNotFound() {
-        return tseSide == TSESide.UNKNOWN;
-    }
-
-    public TSESide getTseSide() {
-        return tseSide;
+        return right;
     }
 
     public void stop() {

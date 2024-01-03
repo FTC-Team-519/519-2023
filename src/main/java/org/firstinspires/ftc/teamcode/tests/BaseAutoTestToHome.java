@@ -1,24 +1,22 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.tests;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.*;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.teamcode.autonomous.TSEVisionProcessor;
 
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection;
 
 
-public class BaseAuto extends OpMode {
+public class BaseAutoTestToHome extends OpMode {
     protected static final double MAX_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.97;
     protected static final double MIN_VALUE_FOR_SERVO_PIXEL_DROPPER = 0.31;
     protected static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.34;
@@ -30,7 +28,7 @@ public class BaseAuto extends OpMode {
     protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
     protected AprilTagProcessor aprilTagProcessor;
-    protected TestVisionProcessor teamScoringElementFinder;
+    protected TSEVisionProcessor teamScoringElementFinder;
     protected VisionPortal portal;
 
     protected DcMotor leftFrontDrive = null;
@@ -56,8 +54,7 @@ public class BaseAuto extends OpMode {
 
     protected boolean onRedTeam = true;
 
-    protected int positionOfTheTSE = 3; // 1 for left 2 for center 3 for right
-    protected int step = 1;
+    protected PositionOfTSE positionOfTheTSE = PositionOfTSE.RIGHT;
 
     protected ElapsedTime runtime = new ElapsedTime();
 
@@ -72,6 +69,33 @@ public class BaseAuto extends OpMode {
 
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
+
+    protected enum PositionOfTSE {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
+    private enum PixelDropStep {
+        START,
+        CHECK_TARGET,
+        RUN_TIME_RESET_FOR_TURN,
+        TURN_TO_SPIKE,
+        RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE,
+        DRIVE_TO_SPIKE,
+        DROP_PIXEL,
+        FINAL_RESET,
+        DRIVE_BACK_TO_HOME,
+        DONE
+    }
+
+    private PixelDropStep step = PixelDropStep.START;
+
+    private double distance_traveled_forward = 0;
+    private double angle_turned = 0;
+    private double distance_traveled_to_pixel = 0;
+
+
     @Override
     public void init() {
         autoPixelServo = hardwareMap.get(Servo.class, "pixelDropperServo");
@@ -127,8 +151,6 @@ public class BaseAuto extends OpMode {
 
         angleOffset = 0;
 
-        step = 1;
-
         moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
 
         initAprilTag();
@@ -137,159 +159,149 @@ public class BaseAuto extends OpMode {
     @Override
     public void init_loop() {
         if (teamScoringElementFinder.isCenter()) {
-            goingCenter = true;
-            goingLeft = false;
-            goingRight = false;
+            positionOfTheTSE = PositionOfTSE.CENTER;
         } else if (teamScoringElementFinder.isRight()) {
-            goingRight = true;
-            goingLeft = false;
-            goingCenter = false;
+            positionOfTheTSE = PositionOfTSE.RIGHT;
         } else if (teamScoringElementFinder.isLeft()) {
-            goingLeft = true;
-            goingRight = false;
-            goingCenter = false;
+            positionOfTheTSE = PositionOfTSE.LEFT;
         }
     }
 
     @Override
     public void start() {
-        if (goingLeft) {
-            positionOfTheTSE = 1;
-        }else if (goingCenter) {
-            positionOfTheTSE = 2;
-        }else if (goingRight) {
-            positionOfTheTSE = 3;
-        }
         teamScoringElementFinder.stop();
         runtime.reset();
     }
 
     @Override
     public void loop() {
-
         //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         YawPitchRollAngles yawPitchRollAngles = imu.getRobotYawPitchRollAngles();
         yaw = yawPitchRollAngles.getYaw(AngleUnit.DEGREES);
         pitch = yawPitchRollAngles.getPitch(AngleUnit.DEGREES);
         roll = yawPitchRollAngles.getRoll(AngleUnit.DEGREES);
         switch (positionOfTheTSE) {
-            case 1: // Going to the left
+            case LEFT: // Going to the left
                 switch (step) {
-                    case 1:
-                        driveDistanceTime(driveSpeed, 5000, runtime);
+                    case START:
+//                        driveDistanceTime(driveSpeed, 5000, runtime);
+                        driveDistanceInches(0.25, 12);
+                        step = PixelDropStep.CHECK_TARGET;
                         break;
-                    case 2:
-                        runtime.reset();
-                        step++;
-                        break;
-                    case 3:
-                        turnLeft(0.25, 45);
-                        if (runtime.seconds() > 4.0) {
-                            step++;
-                        }
-                        break;
-                    case 4:
-                        runtime.reset();
-                        step++;
-                        break;
-                    case 5:
-                        setAllDrivePower(0.25);
-                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-                    case 6:
-                        autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
-                        step++;
-                        break;
-                    case 7:
-                        runtime.reset();
-                        step++;
-                        break;
-                    case 8:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey() && runtime.seconds() > .5) {
-                            setAllDrivePower(0.0);
-                            step++;
-                        }
-                        break;
-                }
-                break;
-
-
-            case 2: // Going to Center
-                switch (step) {
-                    case 1:
-                        driveDistanceInches(driveSpeed, 36,onRedTeam,!onRedTeam);
-
-                        step++;
-                        break;
-                    case 2:
+                    case CHECK_TARGET:
                         if (atTargetPosition()) {
-                            step++;
-                        }
-                        if (onRedTeam && seeingRed() || !onRedTeam && seeingBlue()) {
-                            step++;
+                            step = PixelDropStep.RUN_TIME_RESET_FOR_TURN;
+                            distance_traveled_forward = leftFrontDrive.getCurrentPosition();
                         }
                         break;
-                    case 3:
-                        autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
+                    case RUN_TIME_RESET_FOR_TURN:
+//                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
-                        step++;
+                        step = PixelDropStep.TURN_TO_SPIKE;
                         break;
-                    case 4:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey()) {
-                            setAllDrivePower(0.0);
-                            step++;
+                    case TURN_TO_SPIKE:
+                        boolean leftTurnIsDone = turnLeft(0.25, 45);
+                        if (runtime.seconds() > 4.0 || leftTurnIsDone) {
+                            step = PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
                         }
+                        break;
+                    case RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE:
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        runtime.reset();
+                        step = PixelDropStep.DRIVE_TO_SPIKE;
+                        break;
+                    case DRIVE_TO_SPIKE:
+                        setAllDrivePower(0.25);
+                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
+                            setAllDrivePower(0.0);
+                            step = PixelDropStep.DROP_PIXEL;
+                            distance_traveled_to_pixel = leftFrontDrive.getCurrentPosition();
+                        }
+                        break;
+                    case DROP_PIXEL:
+                        autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
+                        step = PixelDropStep.FINAL_RESET;
+                        break;
+                    case DRIVE_BACK_TO_HOME:
+                        break;
+
+
+
+                    case FINAL_RESET:
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        runtime.reset();
+                        step = PixelDropStep.DONE;
                         break;
                 }
                 break;
 
 
-            case 3: // Going to the right
+            case CENTER: // Going to Center
                 switch (step) {
-                    case 1:
-                        driveDistanceTime(driveSpeed, 5000, runtime);
-                        break;
-                    case 2:
-                        runtime.reset();
-                        step++;
-                        break;
-                    case 3:
-                        turnRight(0.25, 45);
-                        if (runtime.seconds() > 4.0) {
-                            step++;
-                        }
-                        break;
-                    case 4:
-                        runtime.reset();
-                        step++;
-                        break;
-                    case 5:
+                    case START:
+//                        driveDistanceInches(driveSpeed, 36);
                         setAllDrivePower(0.25);
+                        step = PixelDropStep.DRIVE_TO_SPIKE;
+                        break;
+                    case DRIVE_TO_SPIKE:
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
-                            step++;
+                            step=PixelDropStep.FINAL_RESET;
                         }
                         break;
-                    case 6:
+                    case DROP_PIXEL:
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
-                        step++;
-                        break;
-                    case 7:
+                        step = PixelDropStep.FINAL_RESET;
+                    case FINAL_RESET:
                         runtime.reset();
-                        step++;
+                        step=PixelDropStep.DONE;
                         break;
-                    case 8:
-                        setAllDrivePower(-0.25);
-                        if (seeingGrey() && runtime.seconds() > .60) {
-                            setAllDrivePower(0.0);
-                            step++;
+                }
+                break;
+
+
+            case RIGHT: // Going to the right
+                switch (step) {
+                    case START:
+                        driveDistanceInches(0.25, 12);
+                        step=PixelDropStep.CHECK_TARGET;
+                        break;
+                    case CHECK_TARGET:
+                        if (atTargetPosition()) {
+                            step=PixelDropStep.RUN_TIME_RESET_FOR_TURN;
                         }
                         break;
+                    case RUN_TIME_RESET_FOR_TURN:
+                        runtime.reset();
+                        step=PixelDropStep.TURN_TO_SPIKE;
+                        break;
+                    case TURN_TO_SPIKE:
+                        boolean rightTurnIsDone = turnRight(0.25, 45);
+                        if (runtime.seconds() > 4.0 || rightTurnIsDone) {
+                            step=PixelDropStep.RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE;
+                        }
+                        break;
+                    case RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE:
+                        runtime.reset();
+                        step=PixelDropStep.DRIVE_TO_SPIKE;
+                        break;
+                    case DRIVE_TO_SPIKE:
+                        setAllDrivePower(0.25);
+
+                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
+                            setAllDrivePower(0.0);
+                            step=PixelDropStep.DROP_PIXEL;
+                        }
+                        break;
+                    case DROP_PIXEL:
+                        autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
+                        step=PixelDropStep.FINAL_RESET;
+                        break;
+                    case FINAL_RESET:
+                        runtime.reset();
+                        step = PixelDropStep.DONE;
+                        break;
+
                 }
         }
         telemetry.addData("Step:", step);
@@ -309,46 +321,48 @@ public class BaseAuto extends OpMode {
     @Override
     public void stop() {}
 
-    protected void driveDistanceTime(double speed, double desiredTimeMiliseconds, ElapsedTime timeElapsed) {
-        if (timeElapsed.milliseconds() >= desiredTimeMiliseconds) {
-            step++;
-            setAllDrivePower(0.0);
-        }else {
-            setAllDrivePower(speed);
-        }
-    }
+//    protected void driveDistanceTime(double speed, double desiredTimeMiliseconds, ElapsedTime timeElapsed) {
+//        if (timeElapsed.milliseconds() >= desiredTimeMiliseconds) {
+//            step++;
+//            setAllDrivePower(0.0);
+//        }else {
+//            setAllDrivePower(speed);
+//        }
+//    }
 
-    protected void driveDistanceInches(double speed, double distanceInches, boolean senseRed, boolean senseBlue) {
+    protected void driveDistanceInches(double speed, double distanceInches) {
+//        setMode(DcMotor.RunMode.RUN_TO_POSITION);
         setTargetPosition((int)(distanceInches * COUNTS_PER_INCH));
-        if(senseRed && !senseBlue) {
-            while (!atTargetPosition() && !seeingRed()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else if (senseBlue && !senseRed) {
-            while (!atTargetPosition() && !seeingBlue()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else if (senseBlue && senseRed) {
-            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
-                setAllDrivePower(speed);
-            }
-        }
-        else {
-            while(!atTargetPosition()) {
-                setAllDrivePower(speed);
-            }
-        }
-        setAllDrivePower(0);
+        setAllDrivePower(speed);
+//        if(senseRed && !senseBlue) {
+//            while (!atTargetPosition() && !seeingRed()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else if (senseBlue && !senseRed) {
+//            while (!atTargetPosition() && !seeingBlue()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else if (senseBlue && senseRed) {
+//            while (!atTargetPosition() && !seeingBlue() && !seeingRed()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        else {
+//            while(!atTargetPosition()) {
+//                setAllDrivePower(speed);
+//            }
+//        }
+//        setAllDrivePower(0);
     }
 
     protected boolean atTargetPosition() {
         return (
-            leftFrontDrive.getCurrentPosition() >= leftFrontDrive.getTargetPosition() &&
-            leftBackDrive.getCurrentPosition() >= leftBackDrive.getTargetPosition() &&
-            rightFrontDrive.getCurrentPosition() >= rightFrontDrive.getTargetPosition() &&
-            rightBackDrive.getCurrentPosition() >= rightBackDrive.getTargetPosition()
+                leftFrontDrive.getCurrentPosition() >= leftFrontDrive.getTargetPosition() &&
+                        leftBackDrive.getCurrentPosition() >= leftBackDrive.getTargetPosition() &&
+                        rightFrontDrive.getCurrentPosition() >= rightFrontDrive.getTargetPosition() &&
+                        rightBackDrive.getCurrentPosition() >= rightBackDrive.getTargetPosition()
         );
     }
     protected void setTargetPosition(int position) {
@@ -362,7 +376,7 @@ public class BaseAuto extends OpMode {
         telemetry.addData(motor.getDeviceName(), "Target: %d, Actual: %d", motor.getTargetPosition(), motor.getCurrentPosition());
     }
 
-    protected void turnRight(double speed, double degree) {
+    protected boolean turnRight(double speed, double degree) {
         double targetDegree = angleOffset - degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
@@ -371,10 +385,13 @@ public class BaseAuto extends OpMode {
             setRightDrivesPower(-speed);
         } else {
             setAllDrivePower(0.0);
+            return true;
         }
+        return false;
     }
 
-    protected void turnLeft(double speed, double degree) {
+    protected boolean turnLeft(double speed, double degree) {
+//        Returns if done
         double targetDegree = angleOffset + degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
@@ -383,7 +400,9 @@ public class BaseAuto extends OpMode {
             setRightDrivesPower(speed);
         } else {
             setAllDrivePower(0.0);
+            return true;
         }
+        return false;
     }
 
     protected void setAllDrivePower(double power) {
@@ -425,8 +444,7 @@ public class BaseAuto extends OpMode {
         leftBackDrive.setTargetPosition(distanceInches);
         rightFrontDrive.setTargetPosition(distanceInches);
         rightBackDrive.setTargetPosition(-distanceInches);
-        setAllDrivePower(power
-        );
+        setAllDrivePower(power);
         setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -457,5 +475,9 @@ public class BaseAuto extends OpMode {
 //            portal = VisionPortal.easyCreateWithDefaults(
 //                    BuiltinCameraDirection.BACK, aprilTagProcessor);
 //        }
+    }
+
+    public boolean isDone() {
+        return step == PixelDropStep.DONE;
     }
 }
