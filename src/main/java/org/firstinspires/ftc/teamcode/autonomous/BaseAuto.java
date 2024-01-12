@@ -119,8 +119,8 @@ public class BaseAuto extends OpMode {
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imuExpan");
 //        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -143,8 +143,8 @@ public class BaseAuto extends OpMode {
         }
 
 
-        autoPixelServo.setPosition(CLOSED_VALUE_FOR_PIXEL_DROPPER);
-        autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
+//        autoPixelServo.setPosition(CLOSED_VALUE_FOR_PIXEL_DROPPER);
+//        autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
 
         angleOffset = 0;
 
@@ -181,8 +181,6 @@ public class BaseAuto extends OpMode {
             case LEFT: // Going to the left
                 switch (step) {
                     case START:
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         step=PixelDropStep.DRIVE_FORWARD;
                         break;
 //                        driveDistanceTime(driveSpeed, 5000, runtime);
@@ -194,8 +192,6 @@ public class BaseAuto extends OpMode {
                         break;
                     case RUN_TIME_RESET_FOR_TURN:
                         distance_forward = leftFrontDrive.getCurrentPosition()/COUNTS_PER_INCH;
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         runtime.reset();
                         step=PixelDropStep.TURN_TO_SPIKE;
                         break;
@@ -207,21 +203,17 @@ public class BaseAuto extends OpMode {
                         break;
                     case RUN_TIME_RESET_FOR_DRIVE_TO_SPIKE:
                         runtime.reset();
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         step=PixelDropStep.DRIVE_TO_SPIKE;
                         break;
                     case DRIVE_TO_SPIKE:
-                        setAllDrivePower(driveSpeed);
-                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
+                        boolean driveToSpike = driveDistanceInches(driveSpeed, 10);
+                        if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue()) || driveToSpike) {
                             setAllDrivePower(0.0);
                             step=PixelDropStep.DROP_PIXEL;
                         }
                         break;
                     case DROP_PIXEL:
                         distance_to_spike = leftFrontDrive.getCurrentPosition()/COUNTS_PER_INCH;
-                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         autoPixelServo.setPosition(OPEN_VALUE_FOR_PIXEL_DROPPER);
                         step=PixelDropStep.GO_BACK_TO_ROTATE;
                         break;
@@ -403,6 +395,20 @@ public class BaseAuto extends OpMode {
         return false;
     }
 
+    protected boolean driveDistanceToPos(double speed, double distanceInches) {
+//*       Returns if done (Drives forward)
+//        Should only run the first time
+        if (!allTargetPositionsSet((int)(distanceInches * COUNTS_PER_INCH))) {
+            setTargetPosition((int) (distanceInches * COUNTS_PER_INCH));
+            setAllDrivePower(speed);
+        }
+
+        if (atTargetPosition()) {
+            return true;
+        }
+        return false;
+    }
+
     protected boolean driveBackwardDistanceeInches(double speed, double distanceInches) {
 //        Speed positive Distance positive
         //*       Returns if done (Drives forward)
@@ -449,6 +455,8 @@ public class BaseAuto extends OpMode {
     }
 
     protected boolean turnRight(double speed, double degree) {
+        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         double targetDegree = angleOffset - degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
@@ -457,12 +465,15 @@ public class BaseAuto extends OpMode {
             setRightDrivesPower(-speed);
         } else {
             setAllDrivePower(0.0);
+            setMode(DcMotor.RunMode.RUN_TO_POSITION);
             return true;
         }
         return false;
     }
 
     protected boolean turnLeft(double speed, double degree) {
+        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //        Returns if done
         double targetDegree = angleOffset + degree;
         telemetry.addData("target degree", targetDegree);
@@ -472,6 +483,8 @@ public class BaseAuto extends OpMode {
             setRightDrivesPower(speed);
         } else {
             setAllDrivePower(0.0);
+            setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            setMode(DcMotor.RunMode.RUN_TO_POSITION);
             return true;
         }
         return false;
