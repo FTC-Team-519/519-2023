@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests;
+package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,8 +13,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @TeleOp(name = "Testing the April Tag", group = "Tests")
-public class TestAprilTag extends OpMode {
-    final double DESIRED_DISTANCE = 3.0; //  this is how close the camera should get to the target (inches)
+public class AprilTagDetector extends OpMode {
+    final double DESIRED_DISTANCE = 10.0; //  this is how close the camera should get to the target (inches) // Min value is 6
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
@@ -37,15 +37,16 @@ public class TestAprilTag extends OpMode {
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
-    private boolean targetFound;
-    double  drive, strafe, turn;
+    private boolean targetFound, stopped;
+    private double  drive, strafe, turn;
 
     @Override
     public void init() {
-        boolean targetFound     = false;    // Set to true when an AprilTag target is detected
-        double  drive           = 0;        // Desired forward power/speed (-1 to +1)
-        double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
-        double  turn            = 0;        // Desired turning power/speed (-1 to +1)
+        targetFound     = false;    // Set to true when an AprilTag target is detected
+        stopped = false;
+        drive           = 0;        // Desired forward power/speed (-1 to +1)
+        strafe          = 0;        // Desired strafe power/speed (-1 to +1)
+        turn            = 0;        // Desired turning power/speed (-1 to +1)
 
         // Initialize the Apriltag Detection process
         initAprilTag();
@@ -188,6 +189,16 @@ public class TestAprilTag extends OpMode {
                     .addProcessor(aprilTag)
                     .build();
         }
+    }
+
+
+    
+    public void stop() {
+        stopped = true;
+    }
+    
+    public void start() {
+        stopped = false;
     }
 
     public void setDesiredTagId(int desiredId) {
