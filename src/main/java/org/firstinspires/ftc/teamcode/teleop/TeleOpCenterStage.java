@@ -13,17 +13,22 @@ public class TeleOpCenterStage extends OpMode {
     protected DcMotor leftBackDrive = null;
     protected DcMotor rightFrontDrive = null;
     protected DcMotor rightBackDrive = null;
-    protected CRServo clawDroneSideServo;
-
-    protected CRServo clawControlHubSideServo;
+    protected Servo clawDroneSideServo;
+    protected Servo clawControlHubSideServo;
     protected DcMotor armMotor;
     protected DcMotor droneMotor;
 
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
 
-    public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
-    public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
+    public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.16;
+    public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.82;
+
+    public static final double OPEN_VALUE_GRABBER_SERVO_DRONE_SIDE = 0.55;
+    public static final double CLOSED_VALUE_GRABBER_SERVO_DRONE_SIDE = 0.66;
+
+    public static final double OPEN_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE = 0.5;
+    public static final double CLOSED_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE = 0.63;
 
     double position;
 
@@ -32,22 +37,22 @@ public class TeleOpCenterStage extends OpMode {
     //Once, when INIT is pressed
     @Override
     public void init() {
-        setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
         rightBackDrive = hardwareMap.get(DcMotor.class, "backRightMotor");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRightMotor");
+
+        setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        clawDroneSideServo = hardwareMap.get(CRServo.class, "grabberServo1");
-        clawControlHubSideServo = hardwareMap.get(CRServo.class, "grabberServo2");
+        clawDroneSideServo = hardwareMap.get(Servo.class, "grabberServoDroneSide");
+        clawControlHubSideServo = hardwareMap.get(Servo.class, "grabberServoControlHubSide");
 
-        clawControlHubSideServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        clawControlHubSideServo.setDirection(Servo.Direction.REVERSE);
 
         armMotor = hardwareMap.get(DcMotor.class, "armMotor");
         droneMotor = hardwareMap.get(DcMotor.class, "droneMotor");
@@ -130,25 +135,21 @@ public class TeleOpCenterStage extends OpMode {
 
     private void hand() {
         if (gamepad2.left_bumper) {
-            clawDroneSideServo.setPower(1.0);
+            clawDroneSideServo.setPosition(OPEN_VALUE_GRABBER_SERVO_DRONE_SIDE);
         } else if (gamepad2.left_trigger >= 0.25) {
-            clawDroneSideServo.setPower(-1.0);
-        } else {
-            clawDroneSideServo.setPower(0.0);
+            clawDroneSideServo.setPosition(CLOSED_VALUE_GRABBER_SERVO_DRONE_SIDE);
         }
 
-        telemetry.addData("pow",
-                clawDroneSideServo.getPower() + " " + clawControlHubSideServo.getPower());
+//        telemetry.addData("pos",
+//                clawDroneSideServo.getPosition() + " " + clawControlHubSideServo.getPower());
 
         telemetry.addData("controls",
                 "lb: " + gamepad2.left_bumper + " lt: " + (gamepad2.left_trigger>=.25) + " rb: " + gamepad2.right_bumper + " rt: " + (gamepad2.right_trigger>=.25));
 
         if (gamepad2.right_bumper) {
-            clawControlHubSideServo.setPower(1.0);
+            clawControlHubSideServo.setPosition(OPEN_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE);
         } else if (gamepad2.right_trigger >= 0.25) {
-            clawControlHubSideServo.setPower(-1.0);
-        } else {
-            clawControlHubSideServo.setPower(0.0);
+            clawControlHubSideServo.setPosition(CLOSED_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE);
         }
 
         if (gamepad2.x) {
