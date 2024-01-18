@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@Autonomous(name = "Red Close Side Place On Backdrop")
 public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
     private DriveToAprilTag tagDetection = new DriveToAprilTag(telemetry);
     private static final int LEFT_RED_TAG_ID = 4;
@@ -10,9 +14,11 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
         GO_FORWARD_INCHS,
         STRAFE_RIGHT, // Might need to make this be turn left
         TURN_RIGHT,
-        SCORE_ON_BACKDROP,
+        GO_FORWARD,
         FIND_AND_GO_TO_TAG,
         STRAFE_RIGHT_FOR_BACKDROP,
+        SCORE_ON_BACKDROP,
+
         PARK,
         DONE
     }
@@ -37,17 +43,27 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
         } else {
             switch (parkingSteps) {
                 case GO_FORWARD_INCHS:
-                    driveDistanceInches(0.1, 2);
-                    if (runtime.milliseconds() > 100) {
+                    driveDistanceInches(0.25, 4);
+                    if (runtime.milliseconds() > 3000) {
                         runtime.reset();
+                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //                                parkingSteps = ParkingSteps.STRAFE_RIGHT;
                         parkingSteps = ParkingSteps.TURN_RIGHT;
                     }
                     break;
                 case TURN_RIGHT:
-                    turnRight(0.1, 45);
-                    if (runtime.milliseconds() > 1000) {
+                    turnRight(0.25, 80);
+                    if (runtime.milliseconds() > 4000) {
                         runtime.reset();
+                        parkingSteps = ParkingSteps.GO_FORWARD;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    }
+                    break;
+                case GO_FORWARD:
+                    driveDistanceInches(0.25, 24);
+                    if (runtime.milliseconds() > 10000) {
+                        runtime.reset();
+                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         parkingSteps = ParkingSteps.FIND_AND_GO_TO_TAG;
                     }
                     break;
@@ -66,7 +82,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     }else if (isFound) {
                         parkingSteps = ParkingSteps.STRAFE_RIGHT_FOR_BACKDROP;
                     }
-                    break;
+                    break; //TODO: Will need to make it go forward to get closer to the backdrop to place correctly
                 case STRAFE_RIGHT_FOR_BACKDROP:
                     strafeRight((int)(6.5 * COUNTS_PER_INCH), 0.25);
                     if (runtime.milliseconds() > 500) {
@@ -82,6 +98,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     break;
             }
         }
+        telemetry.addData("Step On", parkingSteps);
     }
 
     protected boolean ParkingDone() {

@@ -92,7 +92,7 @@ public class BaseAuto extends OpMode {
         DONE
     }
 
-    private PixelDropStep step = PixelDropStep.START;
+    private PixelDropStep step = PixelDropStep.DONE;
 
     @Override
     public void init() {
@@ -149,7 +149,7 @@ public class BaseAuto extends OpMode {
 
         angleOffset = 0;
 
-        moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
+        moveWrist(INT_VALUE_FOR_WRIST);
 
         initAprilTag();
     }
@@ -183,10 +183,10 @@ public class BaseAuto extends OpMode {
                 switch (step) {
                     case START:
 //                        driveDistanceTime(driveSpeed, 5000, runtime);
-                        boolean driveStraightDone = driveDistanceInches(driveSpeed, 22);
-                        if (driveStraightDone) {
-                            step=PixelDropStep.RUN_TIME_RESET_FOR_TURN;
-                        }
+                        driveDistanceInches(driveSpeed, 22);
+//                        if (driveStraightDone) {
+//                            step=PixelDropStep.RUN_TIME_RESET_FOR_TURN;
+//                        }
                         break;
                     case RUN_TIME_RESET_FOR_TURN:
                         distance_forward = leftFrontDrive.getCurrentPosition();
@@ -222,7 +222,7 @@ public class BaseAuto extends OpMode {
                         step=PixelDropStep.GO_BACK_TO_ROTATE;
                         break;
                     case GO_BACK_TO_ROTATE:
-                        boolean driveBackToRotateDone = driveBackwardDistanceeInches(driveSpeed, distance_to_spike);
+                        boolean driveBackToRotateDone = driveBackwardDistanceInches(driveSpeed, distance_to_spike);
                         if (driveBackToRotateDone) {
                             step = PixelDropStep.ROTATE_BACK;
                         }
@@ -234,7 +234,7 @@ public class BaseAuto extends OpMode {
                         }
                         break;
                     case DRIVE_TO_HOME:
-                        boolean ranIntoWall = driveBackwardDistanceeInches(driveSpeed, distance_forward);
+                        boolean ranIntoWall = driveBackwardDistanceInches(driveSpeed, distance_forward);
                         if (ranIntoWall) {
                             step = PixelDropStep.FINAL_RESET;
                         }
@@ -268,7 +268,7 @@ public class BaseAuto extends OpMode {
                         step = PixelDropStep.DRIVE_TO_HOME;
                         break;
                     case DRIVE_TO_HOME:
-                        boolean backHome = driveBackwardDistanceeInches(driveSpeed, distance_to_spike/COUNTS_PER_INCH);
+                        boolean backHome = driveBackwardDistanceInches(driveSpeed, distance_to_spike/COUNTS_PER_INCH);
                         if (backHome) {
                             step = PixelDropStep.FINAL_RESET;
                         }
@@ -349,21 +349,16 @@ public class BaseAuto extends OpMode {
 //        }
 //    }
 
-    protected boolean driveDistanceInches(double speed, double distanceInches) {
-//*       Returns if done (Drives forward)
-//        Should only run the first time
-        if (!allTargetPositionsSet((int)(distanceInches * COUNTS_PER_INCH))) {
-            setTargetPosition((int) (distanceInches * COUNTS_PER_INCH));
-            setAllDrivePower(speed);
-        }
-
-        if (atTargetPosition()) {
-            return true;
-        }
-        return false;
+    protected void driveDistanceInches(double speed, double distanceInches) {
+        int targetPos = (int)(distanceInches * COUNTS_PER_INCH);
+        telemetry.addData("TargetPos:", targetPos);
+        telemetry.addData("Current Pos:", leftBackDrive.getCurrentPosition());
+        setTargetPosition(targetPos);
+        setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setAllDrivePower(0.25);
     }
 
-    protected boolean driveBackwardDistanceeInches(double speed, double distanceInches) {
+    protected boolean driveBackwardDistanceInches(double speed, double distanceInches) {
 //        Speed positive Distance positive
         //*       Returns if done (Drives forward)
 //        Should only run the first time
@@ -452,7 +447,7 @@ public class BaseAuto extends OpMode {
         rightBackDrive.setPower(power);
     }
 
-    private void setMode(DcMotor.RunMode mode) {
+    protected void setMode(DcMotor.RunMode mode) {
         leftFrontDrive.setMode(mode);
         leftBackDrive.setMode(mode);
         rightFrontDrive.setMode(mode);
