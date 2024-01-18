@@ -26,7 +26,6 @@ public class ServoTester extends OpMode {
     @Override
     public void init() {
         pixelDropper = hardwareMap.get(Servo.class, "pixelDropperServo");
-
         clawDroneSideServo = hardwareMap.get(Servo.class, "grabberServoDroneSide");
         clawControlHubSideServo = hardwareMap.get(Servo.class, "grabberServoControlHubSide");
 

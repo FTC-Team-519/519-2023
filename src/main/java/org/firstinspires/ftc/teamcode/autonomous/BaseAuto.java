@@ -21,8 +21,8 @@ public class BaseAuto extends OpMode {
     protected static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.34;
     protected static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.40;
 
-    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.45;
-    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.2;
+    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.49;
+    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.45;
     protected static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
 
@@ -60,7 +60,7 @@ public class BaseAuto extends OpMode {
     private static final double     COUNTS_PER_MOTOR_REV    = 1425.1  ;    // eg: TETRIX Motor Encoder
     private static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
     private static final double     WHEEL_DIAMETER_INCHES   = 4;     // For figuring circumference
-    private static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
+    protected static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
     protected double  driveSpeed    = 0.25;
     protected double angleOffset;
     protected Servo wristServoControlHubSide;
