@@ -21,10 +21,12 @@ public class BaseAuto extends OpMode {
     protected static final double CLOSED_VALUE_FOR_PIXEL_DROPPER = 0.34;
     protected static final double OPEN_VALUE_FOR_PIXEL_DROPPER = 0.40;
 
-    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.49;
-    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.45;
+    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.48;
+    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.33;
+
     protected static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
     protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
+    protected static final double INT_VALUE_FOR_WRIST = 0.79;
 
     protected AprilTagProcessor aprilTagProcessor;
     protected TSEVisionProcessor teamScoringElementFinder;
