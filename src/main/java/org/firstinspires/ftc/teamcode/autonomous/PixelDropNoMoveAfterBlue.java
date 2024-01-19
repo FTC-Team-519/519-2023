@@ -10,7 +10,7 @@ public class PixelDropNoMoveAfterBlue extends BaseAuto {
     @Override
     public void init() {
         super.init();
-        teamScoringElementFinder = new TSEVisionProcessor(telemetry, false);
+        teamScoringElementFinder = new TSEVisionProcessorTesting(telemetry, false);
         portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), teamScoringElementFinder, aprilTagProcessor);
         onRedTeam = false;
     }

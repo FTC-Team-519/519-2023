@@ -29,7 +29,7 @@ public class BaseAuto extends OpMode {
     protected static final double INT_VALUE_FOR_WRIST = 0.79;
 
     protected AprilTagProcessor aprilTagProcessor;
-    protected TSEVisionProcessor teamScoringElementFinder;
+    protected TSEVisionProcessorTesting teamScoringElementFinder;
     protected VisionPortal portal;
 
     protected DcMotor leftFrontDrive = null;
@@ -63,13 +63,13 @@ public class BaseAuto extends OpMode {
     private static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
     private static final double     WHEEL_DIAMETER_INCHES   = 4;     // For figuring circumference
     protected static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    protected double  driveSpeed    = 0.5;
+    protected double  driveSpeed    = 0.65;
     protected double angleOffset;
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
 
-    private int distance_forward  =0;
-    private int distance_to_spike =0;
+    private int distance_forward  = 0;
+    private int distance_to_spike = 0;
 
     protected enum PositionOfTSE {
         LEFT,
@@ -90,6 +90,7 @@ public class BaseAuto extends OpMode {
         FINAL_RESET,
         DONE
     }
+    private boolean previouslySeenColor = false;
 
     private PixelDropStep step = PixelDropStep.START;
 
@@ -151,6 +152,8 @@ public class BaseAuto extends OpMode {
         moveWrist(INT_VALUE_FOR_WRIST);
 
         initAprilTag();
+
+        previouslySeenColor = false;
     }
 
     @Override
@@ -209,6 +212,9 @@ public class BaseAuto extends OpMode {
                     case DRIVE_TO_SPIKE:
                         setAllDrivePower(driveSpeed / 2);
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
+                            previouslySeenColor = true;
+                        }
+                        if (previouslySeenColor && seeingGrey()) {
                             setAllDrivePower(0.0);
                             step=PixelDropStep.DROP_PIXEL;
                         }
@@ -258,15 +264,16 @@ public class BaseAuto extends OpMode {
 //                        driveDistanceInches(driveSpeed, 36);
                         boolean driveStraightDone = driveDistanceInches(driveSpeed, 36);
                         if (driveStraightDone) {
-                            step=PixelDropStep.DRIVE_TO_SPIKE;
+                            step = PixelDropStep.DRIVE_TO_SPIKE;
                         }
+                        break;
                     case DRIVE_TO_SPIKE:
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             setAllDrivePower(0.0);
                             distance_to_spike = leftFrontDrive.getCurrentPosition();
-                            setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            step=PixelDropStep.DROP_PIXEL;
+//                            setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                            setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            step = PixelDropStep.DROP_PIXEL;
                         }
                         break;
                     case DROP_PIXEL:
@@ -274,13 +281,14 @@ public class BaseAuto extends OpMode {
                         step = PixelDropStep.DRIVE_TO_HOME;
                         break;
                     case DRIVE_TO_HOME:
-                        boolean backHome = driveBackwardDistance(driveSpeed, distance_to_spike + (int)COUNTS_PER_INCH);
+                        boolean backHome = driveBackwardDistanceInches(driveSpeed, 2);
                         if (backHome) {
                             step = PixelDropStep.FINAL_RESET;
                         }
+                        break;
                     case FINAL_RESET:
                         runtime.reset();
-                        step=PixelDropStep.DONE;
+                        step = PixelDropStep.DONE;
                         break;
                 }
                 break;
@@ -453,8 +461,10 @@ public class BaseAuto extends OpMode {
     protected boolean turnRight(double speed, double degree) {
         double targetDegree = angleOffset - degree;
         telemetry.addData("target degree", targetDegree);
+        telemetry.addData("Yaw", yaw);
         telemetry.addData("angle offset", angleOffset);
-        if (yaw >= targetDegree) {
+        yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) >= targetDegree) {
             setLeftDrivesPower(speed);
             setRightDrivesPower(-speed);
         } else {
@@ -469,7 +479,7 @@ public class BaseAuto extends OpMode {
         double targetDegree = angleOffset + degree;
         telemetry.addData("target degree", targetDegree);
         telemetry.addData("angle offset", angleOffset);
-        if (yaw <= targetDegree) {
+        if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) <= targetDegree) {
             setLeftDrivesPower(-speed);
             setRightDrivesPower(speed);
         } else {
@@ -513,7 +523,7 @@ public class BaseAuto extends OpMode {
         return pixelDropperColorSensor.red() > pixelDropperColorSensor.green() && pixelDropperColorSensor.red() > pixelDropperColorSensor.blue();
     }
 
-    protected void strafeLeft(int distanceInches, double power){
+    protected boolean strafeLeft(int distanceInches, double power){
         leftFrontDrive.setTargetPosition(-distanceInches);
         leftBackDrive.setTargetPosition(distanceInches);
         rightFrontDrive.setTargetPosition(distanceInches);
@@ -521,15 +531,33 @@ public class BaseAuto extends OpMode {
         setAllDrivePower(power
         );
         setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if (leftFrontDrive.getCurrentPosition() <= leftFrontDrive.getTargetPosition() &&
+                leftBackDrive.getCurrentPosition() <= leftBackDrive.getTargetPosition() &&
+                rightFrontDrive.getCurrentPosition() <= rightFrontDrive.getTargetPosition() &&
+                rightBackDrive.getCurrentPosition() <= rightBackDrive.getTargetPosition()
+        ) {
+            return true;
+        }
+        return false;
     }
 
-    protected void strafeRight(int value, double power){
+    protected boolean strafeRight(int value, double power){
         leftFrontDrive.setTargetPosition(value);
         leftBackDrive.setTargetPosition(-value);
         rightFrontDrive.setTargetPosition(-value);
         rightBackDrive.setTargetPosition(value);
         setAllDrivePower(power);
         setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if (leftFrontDrive.getCurrentPosition() <= leftFrontDrive.getTargetPosition() &&
+                leftBackDrive.getCurrentPosition() <= leftBackDrive.getTargetPosition() &&
+                rightFrontDrive.getCurrentPosition() <= rightFrontDrive.getTargetPosition() &&
+                rightBackDrive.getCurrentPosition() <= rightBackDrive.getTargetPosition()
+        ) {
+            return true;
+        }
+        return false;
     }
 
     private void moveWrist(double position) {

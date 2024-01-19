@@ -82,9 +82,9 @@ public class TSEVisionProcessor implements org.firstinspires.ftc.vision.VisionPr
                 telemetry.addData("Where the TSE is: ", "Not Found");
             }
         }
-//        telemetry.addData("Times red seen on left: ", leftSideTimesSeen);
-//        telemetry.addData("Times red seen in center: ", centerTimesSeen);
-//        telemetry.addData("Times red seen on right: ", rightSideTimesSeen);
+        telemetry.addData("Times red seen on left: ", leftSideTimesSeen);
+        telemetry.addData("Times red seen in center: ", centerTimesSeen);
+        telemetry.addData("Times red seen on right: ", rightSideTimesSeen);
 //        telemetry.addData("Width: ", frame.width());
 //        telemetry.addData("Height", frame.height());
 //        telemetry.addData("Time Elapsed: ", (endTime - startTime));
