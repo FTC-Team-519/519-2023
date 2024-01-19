@@ -18,7 +18,8 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
         FIND_AND_GO_TO_TAG,
         STRAFE_RIGHT_FOR_BACKDROP,
         SCORE_ON_BACKDROP,
-
+        GO_FORWARD_TO_BACKDROP,
+        RELEASE_PIXEL_FROM_PLACER,
         PARK,
         DONE
     }
@@ -78,20 +79,40 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     }
                     if (isFound && positionOfTheTSE == BaseAuto.PositionOfTSE.RIGHT) {
                         runtime.reset();
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         parkingSteps = ParkingSteps.STRAFE_RIGHT_FOR_BACKDROP;
                     }else if (isFound) {
-                        parkingSteps = ParkingSteps.STRAFE_RIGHT_FOR_BACKDROP;
+                        runtime.reset();
+                        parkingSteps = ParkingSteps.GO_FORWARD_TO_BACKDROP;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     }
                     break; //TODO: Will need to make it go forward to get closer to the backdrop to place correctly
                 case STRAFE_RIGHT_FOR_BACKDROP:
                     strafeRight((int)(6.5 * COUNTS_PER_INCH), 0.25);
-                    if (runtime.milliseconds() > 500) {
-                        parkingSteps = ParkingSteps.SCORE_ON_BACKDROP;
+                    if (runtime.milliseconds() > 5000) {
+                        parkingSteps = ParkingSteps.GO_FORWARD_TO_BACKDROP;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        runtime.reset();
                     }
                     break;
+                case GO_FORWARD_TO_BACKDROP:
+                    driveDistanceInches(0.25, 4);
+                    if (runtime.milliseconds() > 1500) {
+                        parkingSteps = ParkingSteps.SCORE_ON_BACKDROP;
+                        runtime.reset();
+                    }
+                    break;
+
                 case SCORE_ON_BACKDROP:
                     autoBackdrop.setPosition(OPEN_VALUE_FOR_PIXEL_BACKDROPPER);
-                    if (runtime.milliseconds() > 100) {
+                    if (runtime.milliseconds() > 500) {
+                        runtime.reset();
+                        parkingSteps = ParkingSteps.RELEASE_PIXEL_FROM_PLACER;
+                    }
+                    break;
+                case RELEASE_PIXEL_FROM_PLACER:
+                    autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
+                    if (runtime.milliseconds() > 500) {
                         runtime.reset();
                         parkingSteps = ParkingSteps.DONE;
                     }
