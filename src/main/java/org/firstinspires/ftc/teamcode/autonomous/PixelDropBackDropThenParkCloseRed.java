@@ -55,7 +55,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     }
                     break;
                 case TURN_RIGHT:
-                    done = turnRight(0.5, 75);
+                    done = turnRight(0.5, 65);
                     if (runtime.milliseconds() > 4000 || done) {
                         runtime.reset();
                         parkingSteps = ParkingSteps.GO_FORWARD;
@@ -64,7 +64,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     }
                     break;
                 case GO_FORWARD:
-                    done = driveDistanceInches(0.5, 20);
+                    done = driveDistanceInches(0.5, 24);
                     if (runtime.milliseconds() > 5000 || done) {
                         runtime.reset();
                         setMode(DcMotor.RunMode.RUN_USING_ENCODER);

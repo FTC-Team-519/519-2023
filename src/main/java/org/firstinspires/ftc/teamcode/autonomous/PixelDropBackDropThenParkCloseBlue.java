@@ -55,7 +55,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                     }
                     break;
                 case TURN_LEFT:
-                    done = turnLeft(0.5, 70);
+                    done = turnLeft(0.5, 65);
                     if (runtime.milliseconds() > 4000 || done) {
                         runtime.reset();
                         parkingSteps = ParkingSteps.GO_FORWARD;
@@ -90,7 +90,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                         parkingSteps = ParkingSteps.GO_FORWARD_TO_BACKDROP;
                         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     }
-                    break; //TODO: Will need to make it go forward to get closer to the backdrop to place correctly
+                    break;
                 case STRAFE_RIGHT_FOR_BACKDROP:
                     done = strafeRight((int)(6.5 * COUNTS_PER_INCH), 0.35);
                     if (runtime.milliseconds() > 3000 || done) {
