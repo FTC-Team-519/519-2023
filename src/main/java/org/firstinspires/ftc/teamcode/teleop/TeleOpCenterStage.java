@@ -35,6 +35,13 @@ public class TeleOpCenterStage extends OpMode {
 //    final double ARM_SPEED_MULTIPLIER = 0.5;
     final double WRIST_SPEED = 0.005;
     //Once, when INIT is pressed
+
+    private double forwards;
+    private double sideways;
+    private double turn;
+
+    protected Servo autoBackdrop = null;
+    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.48;
     @Override
     public void init() {
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
@@ -66,8 +73,16 @@ public class TeleOpCenterStage extends OpMode {
         
         position = MIN_VALUE_FOR_WRIST_SERVO;
 
+        autoBackdrop = hardwareMap.get(Servo.class, "autoBackdrop");
+
         telemetry.addData("Status","Initialized");
     }
+
+    @Override
+    public void start() {
+        autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
+    }
+
     @Override
     public void loop() {
         drive();
@@ -80,9 +95,9 @@ public class TeleOpCenterStage extends OpMode {
 
     private void drive() {
         double max;
-        double forwards = -gamepad1.left_stick_y;
-        double sideways = gamepad1.left_stick_x;
-        double turn = gamepad1.right_stick_x;
+        forwards = -gamepad1.left_stick_y;
+        sideways = gamepad1.left_stick_x;
+        turn = gamepad1.right_stick_x;
 
         if (gamepad1.dpad_up) {
             forwards = 1;
@@ -102,15 +117,8 @@ public class TeleOpCenterStage extends OpMode {
             turn = 0;
         }
 
-//        Stick drift
-//        if (forwards+StickDeadZone>=0 || forwards-StickDeadZone==0) {forwards = 0;}
-//        if (sideways+StickDeadZone==0 || sideways-StickDeadZone==0) {sideways = 0;}
-//        if (turn+StickDeadZone==0 || turn-StickDeadZone==0) {turn = 0;}
-
 //      Shaping inputs
-        forwards = Math.pow(forwards, 3);
-        sideways = Math.pow(sideways, 3);
-        turn = Math.pow(turn, 3);
+        shapeInput();
 
         double frontLeftPower = forwards + sideways + turn;
         double frontRightPower = forwards - sideways - turn;
@@ -133,6 +141,28 @@ public class TeleOpCenterStage extends OpMode {
         rightBackDrive.setPower(backRightPower);
     }
 
+    private void shapeInput() {
+        int fneg = 1;
+        int sneg = 1;
+        int tneg = 1;
+        if (forwards<0) {
+            fneg*=-1;
+        }
+        if (sideways<0) {
+            sneg*=-1;
+        }
+        if (turn<0) {
+            tneg*=-1;
+        }
+
+        forwards = Math.pow(forwards, 2);
+        sideways = Math.pow(sideways, 2);
+        turn = Math.pow(turn, 2);
+
+        forwards *= fneg;
+        sideways *= sneg;
+        turn *= tneg;
+    }
     private void hand() {
         if (gamepad2.left_bumper) {
             clawDroneSideServo.setPosition(OPEN_VALUE_GRABBER_SERVO_DRONE_SIDE);
@@ -205,9 +235,12 @@ public class TeleOpCenterStage extends OpMode {
 
     private void preset() {
         if (gamepad2.a) {
-            wristServoDroneSide.setPosition(0.6);
-            wristServoControlHubSide.setPosition(0.6);
+            wristServoDroneSide.setPosition(0.46);
+            wristServoControlHubSide.setPosition(0.46);
         }
+
+        telemetry.addData("survo pos",
+                wristServoDroneSide.getPosition());
     }
 
     private void setDriveMode(DcMotor.RunMode mode) {
