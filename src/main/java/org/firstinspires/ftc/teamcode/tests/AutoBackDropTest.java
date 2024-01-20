@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Auto Back Drop Test",group="Iterative OpMode")
+@Disabled
 public class AutoBackDropTest extends OpMode {
     private final double StickDeadZone = 0.05;
     protected final ElapsedTime runtime = new ElapsedTime();

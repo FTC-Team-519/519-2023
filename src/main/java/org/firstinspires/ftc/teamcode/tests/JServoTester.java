@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 @TeleOp(name = "James's Servo Tester")
-//@Disabled
+@Disabled
 public class JServoTester extends OpMode {
 
     private Servo[] servos;

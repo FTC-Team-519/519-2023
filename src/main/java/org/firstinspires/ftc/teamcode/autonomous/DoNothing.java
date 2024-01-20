@@ -18,8 +18,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 @Autonomous(name="Do nothing", group="Iterative OpMode")
 //@Disabled
 public class DoNothing extends OpMode {;
-    public static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
-    public static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
+    protected static final double MIN_VALUE_FOR_WRIST_SERVO = 0.27;
+    protected static final double MAX_VALUE_FOR_WRIST_SERVO = 0.85;
+    protected static final double INT_VALUE_FOR_WRIST = 0.79;
 
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
@@ -30,7 +31,7 @@ public class DoNothing extends OpMode {;
 
         wristServoControlHubSide.setDirection(Servo.Direction.REVERSE);
 
-        moveWrist(MIN_VALUE_FOR_WRIST_SERVO);
+        moveWrist(INT_VALUE_FOR_WRIST);
     }
 
 

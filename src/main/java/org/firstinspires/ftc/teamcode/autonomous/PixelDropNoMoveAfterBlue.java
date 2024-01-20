@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Autonomous(name="Pixel Drop No Move After Blue Side", group="Iterative OpMode")
-//@Disabled
+@Disabled
 public class PixelDropNoMoveAfterBlue extends BaseAuto {
     @Override
     public void init() {

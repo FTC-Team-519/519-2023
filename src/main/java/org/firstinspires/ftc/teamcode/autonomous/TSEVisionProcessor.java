@@ -17,6 +17,7 @@ public class TSEVisionProcessor implements org.firstinspires.ftc.vision.VisionPr
         isRed = lookingForRed;
         this.telemetry = telemetry;
     }
+
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
         left = false;

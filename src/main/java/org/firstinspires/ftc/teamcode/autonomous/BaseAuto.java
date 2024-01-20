@@ -211,6 +211,7 @@ public class BaseAuto extends OpMode {
                         break;
                     case DRIVE_TO_SPIKE:
                         setAllDrivePower(driveSpeed / 2);
+
                         if ((onRedTeam && seeingRed()) || (!onRedTeam && seeingBlue())) {
                             previouslySeenColor = true;
                         }
