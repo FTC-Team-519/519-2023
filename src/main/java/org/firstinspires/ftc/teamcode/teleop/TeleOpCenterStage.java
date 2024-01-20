@@ -30,6 +30,9 @@ public class TeleOpCenterStage extends OpMode {
     public static final double OPEN_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE = 0.5;
     public static final double CLOSED_VALUE_GRABBER_SERVO_CONTROL_HUB_SIDE = 0.63;
 
+    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.48;
+    protected static final double OPEN_VALUE_FOR_PIXEL_BACKDROPPER = 0.33;
+
     double position;
 
 //    final double ARM_SPEED_MULTIPLIER = 0.5;
@@ -41,7 +44,6 @@ public class TeleOpCenterStage extends OpMode {
     private double turn;
 
     protected Servo autoBackdrop = null;
-    protected static final double CLOSED_VALUE_FOR_PIXEL_BACKDROPPER = 0.48;
     @Override
     public void init() {
         leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
@@ -237,6 +239,11 @@ public class TeleOpCenterStage extends OpMode {
         if (gamepad2.a) {
             wristServoDroneSide.setPosition(0.46);
             wristServoControlHubSide.setPosition(0.46);
+        }
+        if (gamepad1.y) {
+            autoBackdrop.setPosition(OPEN_VALUE_FOR_PIXEL_BACKDROPPER);
+        }else {
+            autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
         }
 
         telemetry.addData("survo pos",

@@ -8,7 +8,7 @@ import org.opencv.core.Mat;
 public class TSEVisionProcessorTesting implements org.firstinspires.ftc.vision.VisionProcessor {
     private final Telemetry telemetry;
     private boolean isRed;
-    private boolean farSide;
+    private boolean farSide = false;
     private boolean center;
     private boolean left;
     private boolean right;
@@ -66,37 +66,37 @@ public class TSEVisionProcessorTesting implements org.firstinspires.ftc.vision.V
 
             if (centerTimesSeen == 0 && rightSideTimesSeen == 0) {
                 sideTSEIsOn = SideTSEIsOn.LEFT;
-                telemetry.addData("Where the TSE is: ", "Left Side");
+//                telemetry.addData("Where the TSE is: ", "Left Side");
             } else if (leftSideTimesSeen == 0 && rightSideTimesSeen == 0) {
                 sideTSEIsOn = SideTSEIsOn.CENTER;
-                telemetry.addData("Where the TSE is: ", "Center");
+//                telemetry.addData("Where the TSE is: ", "Center");
             } else if (leftSideTimesSeen == 0 && centerTimesSeen == 0) {
                 sideTSEIsOn = SideTSEIsOn.RIGHT;
-                telemetry.addData("Where the TSE is: ", "Right Side");
+//                telemetry.addData("Where the TSE is: ", "Right Side");
             }
 
             if (!farSide) {
                 if (isRed) {
                     if (centerTimesSeen == 0 && rightSideTimesSeen == 0) {
                         sideTSEIsOn = SideTSEIsOn.LEFT;
-                        telemetry.addData("Where the TSE is: ", "Left Side");
+//                        telemetry.addData("Where the TSE is: ", "Left Side");
                     }
                 }else {
                     if (leftSideTimesSeen == 0 && centerTimesSeen == 0) {
                         sideTSEIsOn = SideTSEIsOn.RIGHT;
-                        telemetry.addData("Where the TSE is: ", "Right Side");
+//                        telemetry.addData("Where the TSE is: ", "Right Side");
                     }
                 }
             } else {
                 if (isRed) {
                     if (leftSideTimesSeen == 0 && centerTimesSeen == 0) {
                         sideTSEIsOn = SideTSEIsOn.RIGHT;
-                        telemetry.addData("Where the TSE is: ", "Right Side");
+//                        telemetry.addData("Where the TSE is: ", "Right Side");
                     }
                 } else {
                     if (centerTimesSeen == 0 && rightSideTimesSeen == 0) {
                         sideTSEIsOn = SideTSEIsOn.LEFT;
-                        telemetry.addData("Where the TSE is: ", "Left Side");
+//                        telemetry.addData("Where the TSE is: ", "Left Side");
                     }
                 }
             }

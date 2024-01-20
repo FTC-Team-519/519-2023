@@ -20,6 +20,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
         SCORE_ON_BACKDROP,
         GO_FORWARD_TO_BACKDROP,
         RELEASE_PIXEL_FROM_PLACER,
+        STRAFE_LEFT,
         PARK,
         DONE
     }
@@ -101,7 +102,7 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     }
                     break;
                 case GO_FORWARD_TO_BACKDROP:
-                    done = driveDistanceInches(0.5, 6);
+                    done = driveDistanceInches(0.75, 6);
                     if (runtime.milliseconds() > 1500 || done) {
                         parkingSteps = ParkingSteps.SCORE_ON_BACKDROP;
                         runtime.reset();
@@ -120,7 +121,28 @@ public class PixelDropBackDropThenParkCloseRed extends PixelDropNoMoveAfterRed{
                     autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
                     if (runtime.milliseconds() > 500) {
                         runtime.reset();
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        parkingSteps = ParkingSteps.STRAFE_RIGHT;
+                    }
+                    break;
+                case STRAFE_RIGHT:
+                    done = strafeRight((int)(48 * COUNTS_PER_INCH), 0.75);
+
+                    if (done || runtime.milliseconds() > 4000) {
                         parkingSteps = ParkingSteps.DONE;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        done = false;
+                        runtime.reset();
+                    }
+                    break;
+
+                case STRAFE_LEFT:
+                    done = strafeLeft(24, 0.75);
+                    if (done || runtime.milliseconds() > 4000) {
+                        parkingSteps = ParkingSteps.DONE;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        done = false;
+                        runtime.reset();
                     }
                     break;
             }

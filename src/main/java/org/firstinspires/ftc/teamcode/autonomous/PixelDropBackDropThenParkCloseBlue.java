@@ -10,9 +10,11 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
     private static final int CENTER_BLUE_TAG_ID = 2;
     private static final int RIGHT_BLUE_TAG_ID = 3;
 
+    private int numTimesHitBackDrop = 0;
+
     private enum ParkingSteps {
         GO_FORWARD_INCHS,
-        STRAFE_RIGHT, // Might need to make this be turn left
+        STRAFE_RIGHT,
         TURN_LEFT,
         GO_FORWARD,
         FIND_AND_GO_TO_TAG,
@@ -20,6 +22,8 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
         SCORE_ON_BACKDROP,
         GO_FORWARD_TO_BACKDROP,
         RELEASE_PIXEL_FROM_PLACER,
+        GO_BACK_FROM_BACKDROP,
+        STRAFE_LEFT,
         PARK,
         DONE
     }
@@ -31,6 +35,8 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
         tagDetection.init(leftFrontDrive, leftBackDrive, rightFrontDrive, rightBackDrive, aprilTagProcessor);
         parkingSteps = ParkingSteps.GO_FORWARD_INCHS;
         teamScoringElementFinder.setToCloseSide();
+
+        numTimesHitBackDrop = 0;
     }
 
     @Override
@@ -45,7 +51,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
         } else {
             switch (parkingSteps) {
                 case GO_FORWARD_INCHS:
-                    boolean done = driveDistanceInches(0.5, 4);
+                    boolean done = driveDistanceInches(0.75, 4);
                     if (runtime.milliseconds() > 3000 || done) {
                         runtime.reset();
                         setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -64,7 +70,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                     }
                     break;
                 case GO_FORWARD:
-                    done = driveDistanceInches(0.5, 24);
+                    done = driveDistanceInches(0.75, 24);
                     if (runtime.milliseconds() > 5000 || done) {
                         runtime.reset();
                         setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -92,7 +98,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                     }
                     break;
                 case STRAFE_RIGHT_FOR_BACKDROP:
-                    done = strafeRight((int)(6.5 * COUNTS_PER_INCH), 0.35);
+                    done = strafeRight((int)(6.5 * COUNTS_PER_INCH), 0.5);
                     if (runtime.milliseconds() > 3000 || done) {
                         parkingSteps = ParkingSteps.GO_FORWARD_TO_BACKDROP;
                         setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -101,7 +107,7 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                     }
                     break;
                 case GO_FORWARD_TO_BACKDROP:
-                    done = driveDistanceInches(0.5, 6);
+                    done = driveDistanceInches(0.75, 6);
                     if (runtime.milliseconds() > 1500 || done) {
                         parkingSteps = ParkingSteps.SCORE_ON_BACKDROP;
                         runtime.reset();
@@ -120,8 +126,38 @@ public class PixelDropBackDropThenParkCloseBlue extends PixelDropNoMoveAfterBlue
                     autoBackdrop.setPosition(CLOSED_VALUE_FOR_PIXEL_BACKDROPPER);
                     if (runtime.milliseconds() > 500) {
                         runtime.reset();
-                        parkingSteps = ParkingSteps.DONE;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        parkingSteps  = ParkingSteps.GO_BACK_FROM_BACKDROP;
                     }
+                    break;
+                case GO_BACK_FROM_BACKDROP:
+                    done = driveBackwardDistanceInches(0.75, 2);
+                    if (done || runtime.milliseconds() > 2000) {
+                        parkingSteps = ParkingSteps.STRAFE_LEFT;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        done = false;
+                        runtime.reset();
+                    }
+                    break;
+                case STRAFE_RIGHT:
+                    done = strafeRight((int)(24 * COUNTS_PER_INCH), 0.75);
+
+                    if (done || runtime.milliseconds() > 4000) {
+                        parkingSteps = ParkingSteps.DONE;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        done = false;
+                        runtime.reset();
+                    }
+                    break;
+                case STRAFE_LEFT:
+                    done = strafeLeft((int)(40 * COUNTS_PER_INCH), 0.75);
+                    if (done || runtime.milliseconds() > 4000) {
+                        parkingSteps = ParkingSteps.DONE;
+                        setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        done = false;
+                        runtime.reset();
+                }
                     break;
             }
         }

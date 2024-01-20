@@ -63,7 +63,7 @@ public class BaseAuto extends OpMode {
     private static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
     private static final double     WHEEL_DIAMETER_INCHES   = 4;     // For figuring circumference
     protected static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    protected double  driveSpeed    = 0.65;
+    protected double  driveSpeed    = 0.75;
     protected double angleOffset;
     protected Servo wristServoControlHubSide;
     protected Servo wristServoDroneSide;
